@@ -10,6 +10,12 @@ export const MATIC_PROVIDER_URI = "https://polygon-rpc.com";
 export const MUMBAI_CHAIN_ID = 80001;
 export const MUMBAI_PROVIDER_URI = "https://rpc-mumbai.matic.today";
 
+export const AGORA_CHAIN_ID = 2151;
+export const AGORA_PROVIDER_URI = "https://mainnet.bosagora.org";
+
+export const AGORA_TESTNNET_CHAIN_ID = 2019;
+export const AGORA_TESTNET_PROVIDER_URI = "https://testnet.bosagora.org";
+
 export declare const AVAX_FUJI_CHAIN_ID = 43113;
 export declare const AVAX_CHAIN_ID = 43114;
 export declare const AVAX_FUJI_PROVIDER =
