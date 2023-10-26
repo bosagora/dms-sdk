@@ -172,6 +172,7 @@ describe("Integrated test of Ledger", () => {
                 )) {
                     switch (step.key) {
                         case NormalSteps.PREPARED:
+                            console.log("NormalSteps.PREPARED");
                             expect(step.purchaseId).toEqual(purchase.purchaseId);
                             expect(step.amount).toEqual(amount);
                             expect(step.currency).toEqual(purchase.currency.toLowerCase());
@@ -180,11 +181,13 @@ describe("Integrated test of Ledger", () => {
                             expect(step.signature).toMatch(/^0x[A-Fa-f0-9]{130}$/i);
                             break;
                         case NormalSteps.SENT:
+                            console.log("NormalSteps.SENT");
                             expect(typeof step.txHash).toBe("string");
                             expect(step.txHash).toMatch(/^0x[A-Fa-f0-9]{64}$/i);
                             expect(step.purchaseId).toEqual(purchase.purchaseId);
                             break;
                         case NormalSteps.DONE:
+                            console.log("NormalSteps.DONE");
                             expect(step.purchaseId).toEqual(purchase.purchaseId);
                             expect(step.paidValue).toEqual(amount);
                             break;
