@@ -21,7 +21,7 @@ jobs:
           cache: 'yarn'
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn install --pure-lockfile
+        run: yarn install --pure-lockfile && npm rebuild
 
       - name: Build of common
         run: cd packages/common && yarn run build
