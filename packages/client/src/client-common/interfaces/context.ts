@@ -5,32 +5,33 @@ import { JsonRpcProvider, Networkish } from "@ethersproject/providers";
 
 // Context input parameters
 type Web3ContextParams = {
-    network: Networkish;
-    signer?: Signer;
-    web3Providers?: string | JsonRpcProvider | (string | JsonRpcProvider)[];
-    phoneLinkAddress?: string;
-    tokenAddress?: string;
-    validatorAddress?: string;
-    currencyRateAddress?: string;
-    shopAddress?: string;
-    ledgerAddress?: string;
-    loyaltyProviderAddress?: string;
-    loyaltyConsumerAddress?: string;
-    loyaltyExchangerAddress?: string;
-    loyaltyTransferAddress?: string;
-    loyaltyBridgeAddress?: string;
-};
-type HttpContextParams = {
-    relayEndpoint?: string | URL;
+    network: number;
+    privateKey: string;
+    web3Provider: string;
+    phoneLinkAddress: string;
+    tokenAddress: string;
+    validatorAddress: string;
+    currencyRateAddress: string;
+    shopAddress: string;
+    ledgerAddress: string;
+    loyaltyProviderAddress: string;
+    loyaltyConsumerAddress: string;
+    loyaltyExchangerAddress: string;
+    loyaltyTransferAddress: string;
+    loyaltyBridgeAddress: string;
 };
 
-export type ContextParams = Web3ContextParams & HttpContextParams;
+type RelayContextParams = {
+    relayEndpoint: string;
+};
+
+export type ContextParams = Web3ContextParams & RelayContextParams;
 
 // Context state data
 type Web3ContextState = {
     network: Networkish;
     signer?: Signer;
-    web3Providers: JsonRpcProvider[];
+    web3Provider: JsonRpcProvider;
     phoneLinkAddress?: string;
     tokenAddress?: string;
     validatorAddress?: string;
@@ -43,8 +44,9 @@ type Web3ContextState = {
     loyaltyTransferAddress?: string;
     loyaltyBridgeAddress?: string;
 };
-type HTTPContextState = {
-    relayEndpoint?: string | URL;
+
+type RelayContextState = {
+    relayEndpoint?: string;
 };
 
-export type ContextState = Web3ContextState & HTTPContextState;
+export type ContextState = Web3ContextState & RelayContextState;

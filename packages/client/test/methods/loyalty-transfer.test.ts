@@ -39,17 +39,17 @@ describe("LoyaltyTransfer", () => {
     const users: IUserData[] = JSON.parse(fs.readFileSync("test/helper/users.json", "utf8")) as IUserData[];
 
     beforeAll(async () => {
-        contextParams.signer = new Wallet(users[0].privateKey);
+        contextParams.privateKey = users[0].privateKey;
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });
 
     beforeAll(async () => {
-        client.useSigner(new Wallet(users[0].privateKey));
+        client.usePrivateKey(users[0].privateKey);
     });
 
     it("Server Health Checking", async () => {
-        const isUp = await client.ledger.isRelayUp();
+        const isUp = await client.ledger.relay.isUp();
         expect(isUp).toEqual(true);
     });
 
@@ -63,7 +63,7 @@ describe("LoyaltyTransfer", () => {
         const amount = Amount.make(100, 18).value;
         const oldBalance0 = await client.ledger.getTokenBalance(users[0].address);
         const oldBalance1 = await client.ledger.getTokenBalance(users[1].address);
-        client.useSigner(new Wallet(users[0].privateKey, NodeInfo.createProvider()));
+        client.usePrivateKey(users[0].privateKey);
         for await (const step of client.ledger.transfer(users[1].address, amount)) {
             switch (step.key) {
                 case NormalSteps.PREPARED:

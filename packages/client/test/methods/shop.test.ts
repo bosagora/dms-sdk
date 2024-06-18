@@ -32,13 +32,13 @@ describe("Shop", () => {
     });
 
     beforeAll(async () => {
-        contextParams.signer = shopWallet;
+        contextParams.privateKey = shopWallet.privateKey;
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });
 
     it("Server Health Checking", async () => {
-        const isUp = await client.shop.isRelayUp();
+        const isUp = await client.shop.relay.isUp();
         expect(isUp).toEqual(true);
     });
 
@@ -107,7 +107,7 @@ describe("Shop", () => {
         let detail = await client.shop.getTaskDetail(taskId);
 
         // Approve New
-        client.useSigner(shopWallet);
+        client.usePrivateKey(shopWallet.privateKey);
         for await (const step of client.shop.approveUpdate(taskId, shopData.shopId, true)) {
             switch (step.key) {
                 case NormalSteps.PREPARED:
@@ -161,7 +161,7 @@ describe("Shop", () => {
         let detail = await client.shop.getTaskDetail(taskId);
 
         // Approve New
-        client.useSigner(shopWallet);
+        client.usePrivateKey(shopWallet.privateKey);
         for await (const step of client.shop.approveStatus(taskId, shopData.shopId, true)) {
             switch (step.key) {
                 case NormalSteps.PREPARED:

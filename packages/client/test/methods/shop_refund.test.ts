@@ -173,7 +173,7 @@ describe("Shop Withdrawal", () => {
     });
 
     it("Server Health Checking", async () => {
-        const isUp = await client.ledger.isRelayUp();
+        const isUp = await client.ledger.relay.isUp();
         expect(isUp).toEqual(true);
     });
 
@@ -216,11 +216,20 @@ describe("Shop Withdrawal", () => {
                 phone: phoneHash,
                 sender: await accounts[AccountIndex.FOUNDATION].getAddress()
             };
-            const purchaseMessage = ContractUtils.getPurchasesMessage(0, [purchaseParams], NodeInfo.CHAIN_ID);
-            const signatures = validatorWallets.map((m) => ContractUtils.signMessage(m, purchaseMessage));
+            const purchaseMessage = ContractUtils.getPurchasesMessage(0, [purchaseParams], NodeInfo.getChainId());
+            const signatures = await Promise.all(
+                validatorWallets.map((m) => ContractUtils.signMessage(m, purchaseMessage))
+            );
+            const proposeMessage = ContractUtils.getPurchasesProposeMessage(
+                0,
+                [purchaseParams],
+                signatures,
+                NodeInfo.getChainId()
+            );
+            const proposerSignature = await ContractUtils.signMessage(validatorWallets[4], proposeMessage);
             await contractInfo.loyaltyProvider
                 .connect(validatorWallets[4])
-                .savePurchase(0, [purchaseParams], signatures);
+                .savePurchase(0, [purchaseParams], signatures, proposerSignature);
         }
     });
 
@@ -274,7 +283,7 @@ describe("Shop Withdrawal", () => {
 
         const purchaseAmount = Amount.make(purchase.amount, 18).value;
 
-        client.useSigner(userWallets[purchase.userIndex]);
+        client.usePrivateKey(userWallets[purchase.userIndex].privateKey);
 
         // Open New
         let res = await Network.post(
@@ -298,7 +307,7 @@ describe("Shop Withdrawal", () => {
         await ContractUtils.delay(3000);
 
         // Approve New
-        client.useSigner(userWallets[userIndex]);
+        client.usePrivateKey(userWallets[userIndex].privateKey);
         for await (const step of client.ledger.approveNewPayment(
             paymentId,
             purchase.purchaseId,
@@ -356,7 +365,7 @@ describe("Shop Withdrawal", () => {
 
     it("Open Withdrawal", async () => {
         shopIndex = 1;
-        client.useSigner(shopWallets[shopIndex]);
+        client.usePrivateKey(shopWallets[shopIndex].privateKey);
         const refundAmount = Amount.make(200, 18).value;
 
         for await (const step of client.shop.refund(shop.shopId, refundAmount)) {

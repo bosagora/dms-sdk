@@ -1,11 +1,4 @@
-import {
-    ClientCore,
-    Context,
-    IClientHttpCore,
-    LIVE_CONTRACTS,
-    SupportedNetwork,
-    SupportedNetworkArray
-} from "../../client-common";
+import { ClientCore, Context } from "../../client-common";
 import { ILedgerMethods } from "../../interface/ILedger";
 import {
     Ledger,
@@ -24,7 +17,7 @@ import {
     PhoneLinkCollection__factory
 } from "dms-contracts-lib-v2";
 import { JsonRpcProvider, Provider } from "@ethersproject/providers";
-import { NoProviderError, NoSignerError, UnsupportedNetworkError, UpdateAllowanceError } from "dms-sdk-common-v2";
+import { NoProviderError, NoSignerError, UpdateAllowanceError } from "dms-sdk-common-v2";
 import { ContractUtils } from "../../utils/ContractUtils";
 import { GasPriceManager } from "../../utils/GasPriceManager";
 import { NonceManager } from "../../utils/NonceManager";
@@ -50,7 +43,8 @@ import {
     IChainInfo,
     WaiteBridgeStepValue,
     WaiteBridgeSteps,
-    LedgerAction
+    LedgerAction,
+    IBalance
 } from "../../interfaces";
 import {
     AmountMismatchError,
@@ -63,12 +57,10 @@ import {
     InsufficientBalanceError,
     InternalServerError,
     MismatchedAddressError,
-    NoHttpModuleError,
     UnregisteredPhoneError
 } from "../../utils/errors";
 import { Network } from "../../client-common/interfaces/network";
 import { findLog } from "../../client-common/utils";
-import { getNetwork } from "../../utils/Utilty";
 
 import { BigNumber } from "@ethersproject/bignumber";
 import { ContractTransaction } from "@ethersproject/contracts";
@@ -78,94 +70,44 @@ import { BytesLike } from "@ethersproject/bytes";
 /**
  * 사용자의 포인트/토큰의 잔고와 제품구매를 하는 기능이 포함되어 있다.
  */
-export class LedgerMethods extends ClientCore implements ILedgerMethods, IClientHttpCore {
-    private relayEndpoint: string | URL | undefined;
-    private mainChainInfo: IChainInfo | undefined;
-    private sideChainInfo: IChainInfo | undefined;
-
+export class LedgerMethods extends ClientCore implements ILedgerMethods {
     constructor(context: Context) {
         super(context);
-        if (context.relayEndpoint) {
-            this.relayEndpoint = context.relayEndpoint;
-        }
-        // Object.freeze(LedgerMethods.prototype);
-        // Object.freeze(this);
+        Object.freeze(LedgerMethods.prototype);
+        Object.freeze(this);
     }
 
-    // region Common
-    /**
-     * 릴레이 서버가 정상적인 상태인지 검사한다.
-     * @return {Promise<boolean>} 이 값이 true 이면 릴레이 서버가 정상이다.
-     */
-    public async isRelayUp(): Promise<boolean> {
-        try {
-            const res = await Network.get(await this.getEndpoint("/"));
-            return res === "OK";
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * 릴레이 서버의 주소를 이용하여 엔드포인트를 생성한다
-     * @param path 경로
-     * @return {Promise<URL>} 엔드포인트의 주소
-     */
-    public async getEndpoint(path: string): Promise<URL> {
-        if (!path) throw Error("Not path");
-        let endpoint;
-        if (this.relayEndpoint) {
-            endpoint = this.relayEndpoint;
-        } else {
-            const provider = this.web3.getProvider();
-            if (!provider) throw new NoProviderError();
-
-            const network = await provider.getNetwork();
-            const networkName = network.name as SupportedNetwork;
-            if (!SupportedNetworkArray.includes(networkName)) {
-                throw new UnsupportedNetworkError(networkName);
-            }
-            endpoint = LIVE_CONTRACTS[networkName].relayEndpoint;
-        }
-
-        if (!endpoint) throw new NoHttpModuleError();
-
-        const newUrl = typeof endpoint === "string" ? new URL(endpoint) : endpoint;
-        if (newUrl && !newUrl?.pathname.endsWith("/")) {
-            newUrl.pathname += "/";
-        }
-        return new URL(path, newUrl);
-    }
-
-    public async getNonceOfLedger(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/ledger/nonce/${account}`));
-        if (res.code !== 0) {
+    public async getBalanceOfLedger(account: string): Promise<IBalance> {
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/ledger/balance/account/${account}`));
+        if (res.code !== 0 || res.data === undefined) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
 
-        return BigNumber.from(res.data.nonce);
+        return {
+            account: String(res.data.account),
+            point: {
+                balance: BigNumber.from(res.data.point.balance),
+                value: BigNumber.from(res.data.point.value)
+            },
+            token: {
+                balance: BigNumber.from(res.data.token.balance),
+                value: BigNumber.from(res.data.token.value)
+            }
+        };
     }
-
-    // endregion
 
     // region Balance
     /**
      * 포인트의 잔고를 리턴한다
-     * @param {string} phone - 전화번호 해시
+     * @param {string} phoneHash - 전화번호 해시
      * @return {Promise<BigNumber>} 포인트 잔고
      */
-    public async getUnPayablePointBalance(phone: string): Promise<BigNumber> {
+    public async getUnPayablePointBalance(phoneHash: string): Promise<BigNumber> {
         const provider = this.web3.getProvider() as Provider;
         if (!provider) throw new NoProviderError();
 
-        const network = getNetwork((await provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerInstance: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), provider);
-        return await ledgerInstance.unPayablePointBalanceOf(phone);
+        return await ledgerInstance.unPayablePointBalanceOf(phoneHash);
     }
 
     /**
@@ -176,12 +118,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
     public async getPointBalance(account: string): Promise<BigNumber> {
         const provider = this.web3.getProvider() as Provider;
         if (!provider) throw new NoProviderError();
-
-        const network = getNetwork((await provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
 
         const ledgerInstance: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), provider);
         return await ledgerInstance.pointBalanceOf(account);
@@ -196,14 +132,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
         const provider = this.web3.getProvider() as Provider;
         if (!provider) throw new NoProviderError();
 
-        const network = getNetwork((await provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerInstance: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), provider);
-
         return await ledgerInstance.tokenBalanceOf(account);
     }
 
@@ -217,14 +146,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
         const provider = this.web3.getProvider() as Provider;
         if (!provider) throw new NoProviderError();
 
-        const network = getNetwork((await provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerInstance: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), provider);
-
         return await ledgerInstance.getFee();
     }
 
@@ -236,17 +158,11 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
 
         const account = await signer.getAddress();
         const nonce = await ledgerContract.nonceOf(account);
-        const message = ContractUtils.getAccountMessage(account, nonce, network.chainId);
+        const message = ContractUtils.getAccountMessage(account, nonce, this.web3.getChainId());
         const signature = await ContractUtils.signMessage(signer, message);
 
         const param = {
@@ -254,7 +170,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             signature
         };
 
-        const res = await Network.post(await this.getEndpoint("/v1/payment/account/temporary"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/payment/account/temporary"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -263,7 +179,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
     }
 
     public async getPaymentDetail(paymentId: BytesLike): Promise<PaymentDetailData> {
-        const res = await Network.get(await this.getEndpoint("/v1/payment/item"), {
+        const res = await Network.get(await this.relay.getEndpoint("/v1/payment/item"), {
             paymentId: paymentId.toString()
         });
         if (res.code !== 0 || res.data === undefined) {
@@ -310,12 +226,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
         const account: string = await signer.getAddress();
         const nonce = await ledgerContract.nonceOf(account);
@@ -327,7 +237,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             currency,
             shopId,
             nonce,
-            network.chainId
+            this.web3.getChainId()
         );
 
         const param = {
@@ -348,7 +258,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             signature
         };
 
-        const res = await Network.post(await this.getEndpoint("/v1/payment/new/approval"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/payment/new/approval"), param);
         if (res.code !== 0 || res.data === undefined) {
             console.log(res.code);
             console.log(res?.error?.message ?? "");
@@ -446,12 +356,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
         const account: string = await signer.getAddress();
         const nonce = await ledgerContract.nonceOf(account);
@@ -460,7 +364,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             paymentId,
             purchaseId,
             nonce,
-            network.chainId
+            this.web3.getChainId()
         );
 
         const param = {
@@ -478,7 +382,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             signature
         };
 
-        const res = await Network.post(await this.getEndpoint("/v1/payment/cancel/approval"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/payment/cancel/approval"), param);
         if (res.code !== 0 || res.data === undefined) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -626,12 +530,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const account: string = await signer.getAddress();
 
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
@@ -676,12 +574,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const account: string = await signer.getAddress();
 
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
@@ -717,12 +609,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoSignerError();
         } else if (!signer.provider) {
             throw new NoProviderError();
-        }
-
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
         }
 
         const nonceSigner = new NonceManager(new GasPriceManager(signer));
@@ -779,12 +665,6 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
 
         const phoneHash = ContractUtils.getPhoneHash(phone.trim());
@@ -804,7 +684,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
         const account: string = await signer.getAddress();
         let contractTx: ContractTransaction;
         const nonce = await ledgerContract.nonceOf(account);
-        const signature = await ContractUtils.signChangePayablePoint(signer, phoneHash, nonce, network.chainId);
+        const signature = await ContractUtils.signChangePayablePoint(signer, phoneHash, nonce, this.web3.getChainId());
 
         const param = {
             phone: phoneHash,
@@ -814,7 +694,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, phone, phoneHash, account, signature, balance };
 
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/changeToPayablePoint"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/changeToPayablePoint"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -854,18 +734,17 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
         const account: string = await signer.getAddress();
         const adjustedAmount = ContractUtils.zeroGWEI(amount);
         let contractTx: ContractTransaction;
         const nonce = await ledgerContract.nonceOf(account);
-        const message = ContractUtils.getChangePointToTokenMessage(account, adjustedAmount, nonce, network.chainId);
+        const message = ContractUtils.getChangePointToTokenMessage(
+            account,
+            adjustedAmount,
+            nonce,
+            this.web3.getChainId()
+        );
         const signature = await ContractUtils.signMessage(signer, message);
 
         yield { key: NormalSteps.PREPARED, account, amount: adjustedAmount, signature };
@@ -875,7 +754,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             amount: adjustedAmount.toString(),
             signature
         };
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/exchangePointToToken"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/exchangePointToToken"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -938,7 +817,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             signature
         };
 
-        const res = await Network.post(await this.getEndpoint("/v1/mobile/register"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/mobile/register"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -956,17 +835,11 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const ledgerContract: Ledger = Ledger__factory.connect(this.web3.getLedgerAddress(), signer);
 
         const account = await signer.getAddress();
         const nonce = await ledgerContract.nonceOf(account);
-        const message = ContractUtils.getRemoveMessage(account, nonce, network.chainId);
+        const message = ContractUtils.getRemoveMessage(account, nonce, this.web3.getChainId());
         const signature = await ContractUtils.signMessage(signer, message);
         let contractTx: ContractTransaction;
 
@@ -977,7 +850,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, account, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/removePhoneInfo"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/removePhoneInfo"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1013,20 +886,14 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             throw new NoProviderError();
         }
 
-        const network = getNetwork((await signer.provider.getNetwork()).chainId);
-        const networkName = network.name as SupportedNetwork;
-        if (!SupportedNetworkArray.includes(networkName)) {
-            throw new UnsupportedNetworkError(networkName);
-        }
-
         const account = await signer.getAddress();
         const adjustedAmount = ContractUtils.zeroGWEI(amount);
 
         let contractTx: ContractTransaction;
-        const nonce = await this.getNonceOfLedger(account);
+        const nonce = await this.relay.getNonceOfLedger(account);
         const expiry = ContractUtils.getTimeStamp() + 60;
         const message = ContractUtils.getTransferMessage(
-            network.chainId,
+            this.web3.getChainId(),
             this.web3.getLoyaltyTransferAddress(),
             account,
             to,
@@ -1046,7 +913,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, from: account, to, amount: adjustedAmount, expiry, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/transfer"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/transfer"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1123,7 +990,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, account, amount: adjustedAmount, expiry, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/deposit_via_bridge"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/deposit_via_bridge"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1223,7 +1090,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
         const account = await signer.getAddress();
         const adjustedAmount = ContractUtils.zeroGWEI(amount);
 
-        const nonce = await this.getNonceOfLedger(account);
+        const nonce = await this.relay.getNonceOfLedger(account);
         const expiry = ContractUtils.getTimeStamp() + 60;
         const message = ContractUtils.getTransferMessage(
             chainInfo.network.chainId,
@@ -1245,7 +1112,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, account, amount: adjustedAmount, expiry, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/ledger/withdraw_via_bridge"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/ledger/withdraw_via_bridge"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1345,83 +1212,42 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
      * 메인체인의 정보를 제공한다.
      */
     public async getChainInfoOfMainChain(): Promise<IChainInfo> {
-        if (this.mainChainInfo !== undefined) return this.mainChainInfo;
-        const res = await Network.get(await this.getEndpoint(`/v1/chain/main/info`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        this.mainChainInfo = {
-            url: res.data.url,
-            network: {
-                name: res.data.network.name,
-                chainId: res.data.network.chainId,
-                ensAddress: res.data.network.ensAddress,
-                transferFee: BigNumber.from(res.data.network.transferFee),
-                bridgeFee: BigNumber.from(res.data.network.bridgeFee)
-            },
-            contract: {
-                token: res.data.contract.token,
-                chainBridge: res.data.contract.chainBridge,
-                loyaltyBridge: res.data.contract.loyaltyBridge
-            }
-        };
-
-        return this.mainChainInfo;
+        return this.relay.getChainInfoOfMainChain();
     }
 
     /**
      * 메인체인의 체인아이디를 제공한다.
      */
     public async getChainIdOfMainChain(): Promise<number> {
-        const chainInfo = await this.getChainInfoOfMainChain();
-        return Number(chainInfo.network.chainId);
+        return this.relay.getChainIdOfMainChain();
     }
 
     /**
      * 메인체인의 Provider를 제공한다.
      */
     public async getProviderOfMainChain(): Promise<JsonRpcProvider> {
-        const chainInfo = await this.getChainInfoOfMainChain();
-        const url = new URL(chainInfo.url);
-        return new JsonRpcProvider(url.href, {
-            name: chainInfo.network.name,
-            chainId: chainInfo.network.chainId,
-            ensAddress: chainInfo.network.ensAddress
-        });
+        return this.relay.getProviderOfMainChain();
     }
 
     /**
      * 메인체인의 토큰잔고를 제공한다.
      */
     public async getMainChainBalance(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/main/balance/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        return BigNumber.from(res.data.balance);
+        return this.relay.getBalanceOfMainChainToken(account);
     }
 
     /**
      * 메인체인의 토큰의 Nonce를 제공한다.
      */
     public async getNonceOfMainChainToken(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/main/nonce/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-
-        return BigNumber.from(res.data.nonce);
+        return this.relay.getNonceOfMainChainToken(account);
     }
 
     /**
      * 메인체인의 토큰잔고를 제공한다. getMainChainBalance 와 동일하다
      */
     public async getBalanceOfMainChainToken(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/main/balance/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        return BigNumber.from(res.data.balance);
+        return this.relay.getBalanceOfMainChainToken(account);
     }
 
     /**
@@ -1464,7 +1290,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, from: account, to, amount: adjustedAmount, expiry, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/token/main/transfer"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/token/main/transfer"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1506,82 +1332,42 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
      * 사이드체인의 정보를 제공한다.
      */
     public async getChainInfoOfSideChain(): Promise<IChainInfo> {
-        if (this.sideChainInfo !== undefined) return this.sideChainInfo;
-        const res = await Network.get(await this.getEndpoint(`/v1/chain/side/info`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        this.sideChainInfo = {
-            url: res.data.url,
-            network: {
-                name: res.data.network.name,
-                chainId: res.data.network.chainId,
-                ensAddress: res.data.network.ensAddress,
-                transferFee: BigNumber.from(res.data.network.transferFee),
-                bridgeFee: BigNumber.from(res.data.network.bridgeFee)
-            },
-            contract: {
-                token: res.data.contract.token,
-                chainBridge: res.data.contract.chainBridge,
-                loyaltyBridge: res.data.contract.loyaltyBridge
-            }
-        };
-        return this.sideChainInfo;
+        return this.relay.getChainInfoOfSideChain();
     }
 
     /**
      * 사이드체인의 체인아이디를 제공한다.
      */
     public async getChainIdOfSideChain(): Promise<number> {
-        const chainInfo = await this.getChainInfoOfSideChain();
-        return Number(chainInfo.network.chainId);
+        return this.relay.getChainIdOfSideChain();
     }
 
     /**
      * 사이드체인의 Provider 를 제공한다.
      */
     public async getProviderOfSideChain(): Promise<JsonRpcProvider> {
-        const chainInfo = await this.getChainInfoOfSideChain();
-        const url = new URL(chainInfo.url);
-        return new JsonRpcProvider(url.href, {
-            name: chainInfo.network.name,
-            chainId: chainInfo.network.chainId,
-            ensAddress: chainInfo.network.ensAddress
-        });
+        return this.relay.getProviderOfSideChain();
     }
 
     /**
      * 사이드체인의 토큰 잔고를 제공한다.
      */
     public async getSideChainBalance(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/side/balance/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        return BigNumber.from(res.data.balance);
+        return this.relay.getBalanceOfSideChainToken(account);
     }
 
     /**
      * 사이드체인의 토큰의 Nonce 를 제공한다.
      */
     public async getNonceOfSideChainToken(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/side/nonce/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-
-        return BigNumber.from(res.data.nonce);
+        return this.relay.getNonceOfSideChainToken(account);
     }
 
     /**
      * 사이드체인의 토큰 잔고를 제공한다. getSideChainBalance 와 동일하다
      */
     public async getBalanceOfSideChainToken(account: string): Promise<BigNumber> {
-        const res = await Network.get(await this.getEndpoint(`/v1/token/side/balance/${account}`));
-        if (res.code !== 0) {
-            throw new InternalServerError(res?.error?.message ?? "");
-        }
-        return BigNumber.from(res.data.balance);
+        return this.relay.getBalanceOfSideChainToken(account);
     }
 
     /**
@@ -1624,7 +1410,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
 
         yield { key: NormalSteps.PREPARED, from: account, to, amount: adjustedAmount, expiry, signature };
 
-        const res = await Network.post(await this.getEndpoint("/v1/token/side/transfer"), param);
+        const res = await Network.post(await this.relay.getEndpoint("/v1/token/side/transfer"), param);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1663,7 +1449,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
     // region History of Ledger
 
     public async getEstimatedSaveHistory(account: string): Promise<any[]> {
-        const res = await Network.get(await this.getEndpoint(`/v1/purchase/user/provide/${account}`));
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/purchase/user/provide/${account}`));
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1672,7 +1458,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
     }
 
     public async getTotalEstimatedSaveHistory(account: string): Promise<any[]> {
-        const res = await Network.get(await this.getEndpoint(`/v1/purchase/user/provide/total/${account}`));
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/purchase/user/provide/total/${account}`));
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1698,7 +1484,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             pageSize,
             actions: actions.join(",")
         };
-        const res = await Network.get(await this.getEndpoint(`/v1/ledger/history/account/${account}`), params);
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/ledger/history/account/${account}`), params);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1779,7 +1565,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             pageNumber,
             pageSize
         };
-        const res = await Network.get(await this.getEndpoint(`/v1/token/main/history/${account}`), params);
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/token/main/history/${account}`), params);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -1803,7 +1589,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods, IClient
             pageNumber,
             pageSize
         };
-        const res = await Network.get(await this.getEndpoint(`/v1/token/side/history/${account}`), params);
+        const res = await Network.get(await this.relay.getEndpoint(`/v1/token/side/history/${account}`), params);
         if (res.code !== 0) {
             throw new InternalServerError(res?.error?.message ?? "");
         }

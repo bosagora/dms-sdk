@@ -4,7 +4,9 @@ import { Wallet } from "@ethersproject/wallet";
 import {
     Amount,
     ContractUtils,
+    ContextBuilder,
     GasPriceManager,
+    ContextParams,
     LIVE_CONTRACTS,
     NonceManager,
     SupportedNetwork,
@@ -79,25 +81,6 @@ export enum AccountIndex {
     CUSTOM
 }
 
-export interface IContextParams {
-    network: Networkish;
-    signer: Signer;
-    phoneLinkAddress: string;
-    tokenAddress: string;
-    validatorAddress: string;
-    currencyRateAddress: string;
-    shopAddress: string;
-    ledgerAddress: string;
-    loyaltyProviderAddress: string;
-    loyaltyConsumerAddress: string;
-    loyaltyExchangerAddress: string;
-    loyaltyTransferAddress: string;
-    loyaltyBridgeAddress: string;
-    web3Providers: string | JsonRpcProvider | (string | JsonRpcProvider)[];
-    relayEndpoint: string | URL;
-    graphqlNodes: { url: string }[];
-}
-
 export interface IContractInfo {
     provider: JsonRpcProvider;
     phoneLinkCollection: PhoneLinkCollection;
@@ -116,11 +99,7 @@ export interface IContractInfo {
 export class NodeInfo {
     public static initialAccounts: any[];
     public static RELAY_ACCESS_KEY = process.env.RELAY_ACCESS_KEY || "";
-    public static NODE_END_POINT = process.env.NODE_END_POINT_FOR_TEST || "";
-    public static GRAPHQL_END_POINT = process.env.GRAPHQL_END_POINT_FOR_TEST || "";
-    public static RELAY_END_POINT = process.env.RELAY_END_POINT_FOR_TEST || "";
-
-    public static CHAIN_ID: number = Number(process.env.CHAIN_ID || "24680");
+    public static NETWORK_NAME: SupportedNetwork = (process.env.NETWORK_NAME || "acc_devnet") as SupportedNetwork;
 
     public static CreateInitialAccounts(): any[] {
         const accounts: string[] = [];
@@ -486,7 +465,7 @@ export class NodeInfo {
         return network;
     }
 
-    private static resolveWeb3Providers(endpoints: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
+    private static resolveWeb3Provider(endpoints: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
         if (typeof endpoints === "string") {
             const url = new URL(endpoints);
             return new JsonRpcProvider(url.href, this.resolveNetwork(network));
@@ -496,37 +475,21 @@ export class NodeInfo {
     }
 
     public static createProvider(): JsonRpcProvider {
-        return this.resolveWeb3Providers(NodeInfo.NODE_END_POINT, NodeInfo.CHAIN_ID);
+        const networkName = this.NETWORK_NAME;
+        return this.resolveWeb3Provider(LIVE_CONTRACTS[networkName].web3Endpoint, LIVE_CONTRACTS[networkName].network);
     }
 
-    public static getContextParams(): IContextParams {
-        const accounts = NodeInfo.accounts();
-        const network = "loyalty_devnet";
+    public static getContextParams(): ContextParams {
+        if (NodeInfo.initialAccounts === undefined) {
+            NodeInfo.initialAccounts = NodeInfo.CreateInitialAccounts();
+        }
+        const networkName = this.NETWORK_NAME;
+        return ContextBuilder.buildContextParams(networkName, NodeInfo.initialAccounts[0].secretKey);
+    }
 
-        const contexts: IContextParams = {
-            network: LIVE_CONTRACTS[network].network,
-            signer: accounts[0],
-            tokenAddress: LIVE_CONTRACTS[network].LoyaltyTokenAddress,
-            phoneLinkAddress: LIVE_CONTRACTS[network].PhoneLinkCollectionAddress,
-            validatorAddress: LIVE_CONTRACTS[network].ValidatorAddress,
-            currencyRateAddress: LIVE_CONTRACTS[network].CurrencyRateAddress,
-            shopAddress: LIVE_CONTRACTS[network].ShopAddress,
-            ledgerAddress: LIVE_CONTRACTS[network].LedgerAddress,
-            loyaltyProviderAddress: LIVE_CONTRACTS[network].LoyaltyProviderAddress,
-            loyaltyConsumerAddress: LIVE_CONTRACTS[network].LoyaltyConsumerAddress,
-            loyaltyExchangerAddress: LIVE_CONTRACTS[network].LoyaltyExchangerAddress,
-            loyaltyTransferAddress: LIVE_CONTRACTS[network].LoyaltyTransferAddress,
-            loyaltyBridgeAddress: LIVE_CONTRACTS[network].LoyaltyBridgeAddress,
-            relayEndpoint: NodeInfo.RELAY_END_POINT,
-            web3Providers: NodeInfo.createProvider(),
-            graphqlNodes: [
-                {
-                    url: NodeInfo.GRAPHQL_END_POINT
-                }
-            ]
-        };
-
-        return contexts;
+    public static getChainId(): number {
+        const contextParams = NodeInfo.getContextParams();
+        return contextParams.network;
     }
 
     public static getContractInfo(): IContractInfo {
@@ -642,9 +605,10 @@ export class NodeInfo {
                 rate: BigNumber.from(1000000000)
             }
         ];
-        const message = ContractUtils.getCurrencyMessage(height, rates, NodeInfo.CHAIN_ID);
+        const chainId = NodeInfo.getChainId();
+        const message = ContractUtils.getCurrencyMessage(height, rates, chainId);
         const signatures = await Promise.all(validators.map((m) => ContractUtils.signMessage(m, message)));
-        const proposeMessage = ContractUtils.getCurrencyProposeMessage(height, rates, signatures, NodeInfo.CHAIN_ID);
+        const proposeMessage = ContractUtils.getCurrencyProposeMessage(height, rates, signatures, chainId);
         const proposerSignature = await ContractUtils.signMessage(validators[0], proposeMessage);
         const tx1 = await currencyRateContract.connect(validators[0]).set(height, rates, signatures, proposerSignature);
         await tx1.wait();

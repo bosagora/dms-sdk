@@ -67,7 +67,7 @@ describe("Integrated test of Shop", () => {
         shopIndex = 2;
         shop = shops[shopIndex];
         beforeAll(async () => {
-            contextParams.signer = new Wallet(shops[shopIndex].privateKey);
+            contextParams.privateKey = shops[shopIndex].privateKey;
             const ctx = new Context(contextParams);
             client = new Client(ctx);
         });
@@ -78,7 +78,7 @@ describe("Integrated test of Shop", () => {
         });
 
         it("Server Health Checking", async () => {
-            const isUp = await client.ledger.isRelayUp();
+            const isUp = await client.ledger.relay.isUp();
             expect(isUp).toEqual(true);
         });
 
@@ -115,11 +115,20 @@ describe("Integrated test of Shop", () => {
                         sender: foundation
                     };
                 });
-                const purchaseMessage = ContractUtils.getPurchasesMessage(0, purchaseParams, NodeInfo.CHAIN_ID);
-                const signatures = validatorWallets.map((m) => ContractUtils.signMessage(m, purchaseMessage));
+                const purchaseMessage = ContractUtils.getPurchasesMessage(0, purchaseParams, NodeInfo.getChainId());
+                const signatures = await Promise.all(
+                    validatorWallets.map((m) => ContractUtils.signMessage(m, purchaseMessage))
+                );
+                const proposeMessage = ContractUtils.getPurchasesProposeMessage(
+                    0,
+                    purchaseParams,
+                    signatures,
+                    NodeInfo.getChainId()
+                );
+                const proposerSignature = await ContractUtils.signMessage(validatorWallets[4], proposeMessage);
                 await contractInfo.loyaltyProvider
                     .connect(validatorWallets[4])
-                    .savePurchase(0, purchaseParams, signatures);
+                    .savePurchase(0, purchaseParams, signatures, proposerSignature);
 
                 for (const user of users) {
                     const balance = await client.ledger.getPointBalance(user.address);
@@ -155,8 +164,7 @@ describe("Integrated test of Shop", () => {
                         purchase.userIndex = userIndex;
                         purchase.purchaseId = NodeInfo.getPurchaseId();
 
-                        const userWallet = new Wallet(user.privateKey);
-                        client.useSigner(userWallet);
+                        client.usePrivateKey(user.privateKey);
 
                         // Open New
                         console.log("Pay point - Open New");
@@ -263,7 +271,7 @@ describe("Integrated test of Shop", () => {
             });
 
             it("Refund", async () => {
-                client.useSigner(new Wallet(shop.privateKey));
+                client.usePrivateKey(shop.privateKey);
 
                 for await (const step of client.shop.refund(shop.shopId, refundableAmount)) {
                     switch (step.key) {
