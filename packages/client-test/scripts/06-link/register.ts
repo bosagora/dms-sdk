@@ -6,7 +6,7 @@ import {
     ContractUtils,
     PhoneLinkRegisterSteps,
     PhoneLinkSubmitSteps,
-} from "acc-sdk-client-v2";
+} from "kios-sdk-client-v2";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();

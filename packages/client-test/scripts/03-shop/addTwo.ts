@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder, ContractUtils, NormalSteps } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder, ContractUtils, NormalSteps } from "kios-sdk-client-v2";
 import fs from "fs";
 import { Wallet } from "ethers";
 

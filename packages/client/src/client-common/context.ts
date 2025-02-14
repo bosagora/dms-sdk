@@ -1,6 +1,6 @@
 import { ContextParams, ContextState } from "./interfaces/context";
 import { SupportedNetwork, SupportedNetworkArray } from "./interfaces/common";
-import { InvalidAddressError, UnsupportedProtocolError, UnsupportedNetworkError } from "acc-sdk-common-v2";
+import { InvalidAddressError, UnsupportedProtocolError, UnsupportedNetworkError } from "kios-sdk-common-v2";
 import { getNetwork } from "../utils/Utilty";
 import { LIVE_CONTRACTS } from "./constants";
 

@@ -1,7 +1,7 @@
 import { HTTPClient } from "../../src/HttpClient";
 import { Helper } from "../utils";
 import URI from "urijs";
-import { ContextBuilder, ContextParams } from "acc-sdk-client-v2";
+import { ContextBuilder, ContextParams } from "kios-sdk-client-v2";
 
 const beautify = require("beautify");
 

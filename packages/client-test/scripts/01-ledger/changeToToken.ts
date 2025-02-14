@@ -1,6 +1,6 @@
 import { Helper } from "../utils";
 import { BOACoin } from "../../src/Amount";
-import { Client, Context, ContextBuilder, NormalSteps } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder, NormalSteps } from "kios-sdk-client-v2";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();

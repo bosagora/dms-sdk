@@ -1,6 +1,6 @@
 import { ClientCore, Context, findLog } from "../../client-common";
-import { PhoneLinkCollection, PhoneLinkCollection__factory } from "acc-contracts-lib-v2";
-import { NoProviderError, NoSignerError } from "acc-sdk-common-v2";
+import { PhoneLinkCollection, PhoneLinkCollection__factory } from "kios-contracts-lib-v2";
+import { NoProviderError, NoSignerError } from "kios-sdk-common-v2";
 import {
     NormalSteps,
     PhoneLinkRegisterSteps,

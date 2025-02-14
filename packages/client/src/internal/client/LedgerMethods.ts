@@ -15,9 +15,9 @@ import {
     LoyaltyTransfer__factory,
     PhoneLinkCollection,
     PhoneLinkCollection__factory
-} from "acc-contracts-lib-v2";
+} from "kios-contracts-lib-v2";
 import { JsonRpcProvider, Provider } from "@ethersproject/providers";
-import { NoProviderError, NoSignerError, UpdateAllowanceError } from "acc-sdk-common-v2";
+import { NoProviderError, NoSignerError, UpdateAllowanceError } from "kios-sdk-common-v2";
 import { ContractUtils } from "../../utils/ContractUtils";
 import { GasPriceManager } from "../../utils/GasPriceManager";
 import { NonceManager } from "../../utils/NonceManager";

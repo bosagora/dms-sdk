@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Amount, Client, Context, ContextBuilder, NormalSteps } from "acc-sdk-client-v2";
+import { Amount, Client, Context, ContextBuilder, NormalSteps } from "kios-sdk-client-v2";
 import { BOACoin } from "../../src/Amount";
 import { BigNumber } from "@ethersproject/bignumber";
 

@@ -1,7 +1,7 @@
 import { ClientCore, Context } from "../../client-common";
-import { Shop, Shop__factory } from "acc-contracts-lib-v2";
+import { Shop, Shop__factory } from "kios-contracts-lib-v2";
 import { Provider } from "@ethersproject/providers";
-import { NoProviderError, NoSignerError } from "acc-sdk-common-v2";
+import { NoProviderError, NoSignerError } from "kios-sdk-common-v2";
 import { ContractUtils } from "../../utils/ContractUtils";
 import {
     AddShopStepValue,

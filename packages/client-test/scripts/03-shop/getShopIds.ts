@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
 
 async function main() {
     const shopInfo = Helper.loadShopInfo();

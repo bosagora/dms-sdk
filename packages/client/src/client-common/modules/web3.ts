@@ -19,7 +19,7 @@ import {
     NoNetwork
 } from "../../utils/errors";
 
-import { UnsupportedNetworkError } from "acc-sdk-common-v2";
+import { UnsupportedNetworkError } from "kios-sdk-common-v2";
 
 const networkMap = new Map<Web3Module, Networkish>();
 const providersMap = new Map<Web3Module, JsonRpcProvider>();

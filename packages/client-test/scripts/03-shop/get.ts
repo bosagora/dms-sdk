@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
 import { BOACoin } from "../../src/Amount";
 
 const beautify = require("beautify");

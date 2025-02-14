@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Amount, Client, Context, ContextBuilder, NormalSteps, WaiteBridgeSteps } from "acc-sdk-client-v2";
+import { Amount, Client, Context, ContextBuilder, NormalSteps, WaiteBridgeSteps } from "kios-sdk-client-v2";
 import { BOACoin } from "../../src/Amount";
 
 async function main() {

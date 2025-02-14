@@ -1,6 +1,6 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder } from "acc-sdk-client-v2";
-import { Ledger, Ledger__factory } from "acc-contracts-lib-v2";
+import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
+import { Ledger, Ledger__factory } from "kios-contracts-lib-v2";
 import { Wallet } from "ethers";
 
 async function main() {

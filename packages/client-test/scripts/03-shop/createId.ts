@@ -1,4 +1,4 @@
-import { ContractUtils, LoyaltyNetworkID } from "acc-sdk-client-v2";
+import { ContractUtils, LoyaltyNetworkID } from "kios-sdk-client-v2";
 import { Wallet } from "ethers";
 import { Helper } from "../utils";
 

@@ -1,4 +1,4 @@
-import { Client, Context, ContextBuilder, ContextParams } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder, ContextParams } from "kios-sdk-client-v2";
 import { Helper } from "../utils";
 import { HTTPClient } from "../../src/HttpClient";
 import URI from "urijs";

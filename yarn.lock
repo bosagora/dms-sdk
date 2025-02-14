@@ -1968,43 +1968,6 @@ abbrev@^2.0.0:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-2.0.0.tgz#cf59829b8b4f03f89dda2771cb7f3653828c89bf"
   integrity sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==
 
-acc-contracts-lib-v2@~2.10.0:
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/acc-contracts-lib-v2/-/acc-contracts-lib-v2-2.10.0.tgz#8dd837ae19ce058b6bdfc459fedb972db3522222"
-  integrity sha512-xdstm7XhHzQuWnQuPnV1Ky2pqPY3kh3qA4vChvePx2QKFAagFGaZpFGGgO8HwT+JuSNH/VLl82dCUkKPLHWm4w==
-  dependencies:
-    ethers "5.7.0"
-
-acc-contracts-lib-v2@~2.12.0:
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/acc-contracts-lib-v2/-/acc-contracts-lib-v2-2.12.0.tgz#e1c9fc703a57aeae1137b0e9afb9847e6b275351"
-  integrity sha512-Tw8Oa4uPcxctQY+J61qj8JoOp4nrpDn4ZlNRwqrxEJFuVGsxNfmqqUqc3UST5oGsSPY4l1S7MtPeVxndCL4ZEQ==
-  dependencies:
-    ethers "5.7.0"
-
-acc-sdk-client-v2@~2.15.2:
-  version "2.15.2"
-  resolved "https://registry.yarnpkg.com/acc-sdk-client-v2/-/acc-sdk-client-v2-2.15.2.tgz#84ede8409ac30fbf1ccef7ff022625ae096d9300"
-  integrity sha512-eG5rN1U8nvI6yY4r9gIuBgeieaYdcXtD/B1WTrlwzYCzQRkaqWnSHqAHoE8tLi7dm8UQJRKSed4kF1CBsIOlYw==
-  dependencies:
-    "@ethersproject/abi" "^5.7.0"
-    "@ethersproject/abstract-signer" "^5.7.0"
-    "@ethersproject/bignumber" "^5.7.0"
-    "@ethersproject/bytes" "^5.7.0"
-    "@ethersproject/constants" "^5.7.0"
-    "@ethersproject/contracts" "^5.7.0"
-    "@ethersproject/hash" "^5.7.0"
-    "@ethersproject/keccak256" "^5.7.0"
-    "@ethersproject/networks" "^5.7.0"
-    "@ethersproject/providers" "^5.7.0"
-    "@ethersproject/random" "^5.7.0"
-    "@ethersproject/wallet" "^5.7.0"
-    "@types/google-libphonenumber" "^7.4.30"
-    acc-contracts-lib-v2 "~2.10.0"
-    acc-sdk-common-v2 "~2.0.0"
-    google-libphonenumber "^3.2.35"
-    unfetch "~4.2.0"
-
 acorn-globals@^4.3.2:
   version "4.3.4"
   resolved "https://registry.npmjs.org/acorn-globals/-/acorn-globals-4.3.4.tgz"
@@ -5757,6 +5720,13 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.npmjs.org/kind-of/-/kind-of-6.0.3.tgz"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
+kios-contracts-lib-v2@~2.13.1:
+  version "2.13.1"
+  resolved "https://registry.yarnpkg.com/kios-contracts-lib-v2/-/kios-contracts-lib-v2-2.13.1.tgz#35b491374fa40f1167b340a252dda2956287e08b"
+  integrity sha512-0PkzwJn8lsd+rfydXYB18CuHt6cQbGu0bWZb3Mvxgx6+l71fgBIUAhz7XxHPtuB07J7Ig0yE4MfY1DsTPYVhEQ==
+  dependencies:
+    ethers "5.7.0"
+
 kleur@^3.0.3:
   version "3.0.3"
   resolved "https://registry.npmjs.org/kleur/-/kleur-3.0.3.tgz"
@@ -8327,7 +8297,7 @@ workerpool@6.2.1:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.2.1.tgz#46fc150c17d826b86a008e5a4508656777e9c343"
   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -8348,6 +8318,15 @@ wrap-ansi@^6.2.0:
   version "6.2.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-6.2.0.tgz"
   integrity sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"

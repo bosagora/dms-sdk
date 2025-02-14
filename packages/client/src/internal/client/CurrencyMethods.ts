@@ -1,8 +1,8 @@
 import { ClientCore, Context } from "../../client-common";
 import { ICurrencyMethods } from "../../interface/ICurrency";
-import { CurrencyRate, CurrencyRate__factory, LoyaltyToken, LoyaltyToken__factory } from "acc-contracts-lib-v2";
+import { CurrencyRate, CurrencyRate__factory, LoyaltyToken, LoyaltyToken__factory } from "kios-contracts-lib-v2";
 import { Provider } from "@ethersproject/providers";
-import { NoProviderError, NoSignerError } from "acc-sdk-common-v2";
+import { NoProviderError, NoSignerError } from "kios-sdk-common-v2";
 import { BigNumber } from "@ethersproject/bignumber";
 import { ContractUtils } from "../../utils/ContractUtils";
 

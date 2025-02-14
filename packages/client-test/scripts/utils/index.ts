@@ -5,7 +5,7 @@ global.XMLHttpRequest = require("xhr2");
 
 import { Wallet } from "ethers";
 import fs from "fs";
-import { SupportedNetwork } from "acc-sdk-client-v2";
+import { SupportedNetwork } from "kios-sdk-client-v2";
 
 export interface IUserInfo {
     phone: string;

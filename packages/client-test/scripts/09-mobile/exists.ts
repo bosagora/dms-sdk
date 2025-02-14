@@ -1,6 +1,6 @@
 import { Helper } from "../utils";
 
-import { Client, Context, ContextBuilder, MobileType } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder, MobileType } from "kios-sdk-client-v2";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();

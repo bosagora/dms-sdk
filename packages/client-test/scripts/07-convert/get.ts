@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
 import { BOACoin } from "../../src/Amount";
 
 async function main() {
@@ -17,7 +17,7 @@ async function main() {
     const amount1 = new BOACoin(await client.currency.pointToCurrency(pointAmount.value, "krw"));
     console.log(`currency amount : ${amount1.toDisplayString(true, 2)} KRW`);
 
-    const symbols = ["point", "acc", "usd", "krw", "jpy", "cny", "php", "eur"];
+    const symbols = ["point", "kios", "usd", "krw", "jpy", "cny", "php", "eur"];
     for (const symbol of symbols) {
         const rate = await client.currency.getRate(symbol);
         console.log(`${symbol.toUpperCase()} rate : ${rate.toString()}`);

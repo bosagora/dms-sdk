@@ -3,7 +3,7 @@ import { Helper } from "../../utils";
 import { HTTPClient } from "../../../src/HttpClient";
 import URI from "urijs";
 
-import { Client, Context, ContextBuilder, ContextParams, NormalSteps } from "acc-sdk-client-v2";
+import { Client, Context, ContextBuilder, ContextParams, NormalSteps } from "kios-sdk-client-v2";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();
