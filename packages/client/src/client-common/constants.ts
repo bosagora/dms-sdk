@@ -3,53 +3,53 @@ import { activeContractsList } from "kios-contracts-lib-v2";
 import { Network } from "@ethersproject/networks";
 
 export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
-    acc_mainnet: {
-        PhoneLinkCollectionAddress: activeContractsList.acc_mainnet.PhoneLinkCollection,
-        LoyaltyTokenAddress: activeContractsList.acc_mainnet.LoyaltyToken,
-        ValidatorAddress: activeContractsList.acc_mainnet.Validator,
-        CurrencyRateAddress: activeContractsList.acc_mainnet.CurrencyRate,
-        ShopAddress: activeContractsList.acc_mainnet.Shop,
-        LedgerAddress: activeContractsList.acc_mainnet.Ledger,
-        LoyaltyProviderAddress: activeContractsList.acc_mainnet.LoyaltyProvider,
-        LoyaltyConsumerAddress: activeContractsList.acc_mainnet.LoyaltyConsumer,
-        LoyaltyExchangerAddress: activeContractsList.acc_mainnet.LoyaltyExchanger,
-        LoyaltyTransferAddress: activeContractsList.acc_mainnet.LoyaltyTransfer,
-        LoyaltyBridgeAddress: activeContractsList.acc_mainnet.LoyaltyBridge,
+    mainnet: {
+        PhoneLinkCollectionAddress: activeContractsList.mainnet.PhoneLinkCollection,
+        LoyaltyTokenAddress: activeContractsList.mainnet.LoyaltyToken,
+        ValidatorAddress: activeContractsList.mainnet.Validator,
+        CurrencyRateAddress: activeContractsList.mainnet.CurrencyRate,
+        ShopAddress: activeContractsList.mainnet.Shop,
+        LedgerAddress: activeContractsList.mainnet.Ledger,
+        LoyaltyProviderAddress: activeContractsList.mainnet.LoyaltyProvider,
+        LoyaltyConsumerAddress: activeContractsList.mainnet.LoyaltyConsumer,
+        LoyaltyExchangerAddress: activeContractsList.mainnet.LoyaltyExchanger,
+        LoyaltyTransferAddress: activeContractsList.mainnet.LoyaltyTransfer,
+        LoyaltyBridgeAddress: activeContractsList.mainnet.LoyaltyBridge,
         network: 215110,
-        web3Endpoint: "https://rpc.main.acccoin.io/",
-        relayEndpoint: "https://relay.main.acccoin.io/"
+        web3Endpoint: "https://rpc.main.kioscoin.io/",
+        relayEndpoint: "https://relay.main.kioscoin.io/"
     },
-    acc_testnet: {
-        PhoneLinkCollectionAddress: activeContractsList.acc_testnet.PhoneLinkCollection,
-        LoyaltyTokenAddress: activeContractsList.acc_testnet.LoyaltyToken,
-        ValidatorAddress: activeContractsList.acc_testnet.Validator,
-        CurrencyRateAddress: activeContractsList.acc_testnet.CurrencyRate,
-        ShopAddress: activeContractsList.acc_testnet.Shop,
-        LedgerAddress: activeContractsList.acc_testnet.Ledger,
-        LoyaltyProviderAddress: activeContractsList.acc_testnet.LoyaltyProvider,
-        LoyaltyConsumerAddress: activeContractsList.acc_testnet.LoyaltyConsumer,
-        LoyaltyExchangerAddress: activeContractsList.acc_testnet.LoyaltyExchanger,
-        LoyaltyTransferAddress: activeContractsList.acc_testnet.LoyaltyTransfer,
-        LoyaltyBridgeAddress: activeContractsList.acc_testnet.LoyaltyBridge,
+    testnet: {
+        PhoneLinkCollectionAddress: activeContractsList.testnet.PhoneLinkCollection,
+        LoyaltyTokenAddress: activeContractsList.testnet.LoyaltyToken,
+        ValidatorAddress: activeContractsList.testnet.Validator,
+        CurrencyRateAddress: activeContractsList.testnet.CurrencyRate,
+        ShopAddress: activeContractsList.testnet.Shop,
+        LedgerAddress: activeContractsList.testnet.Ledger,
+        LoyaltyProviderAddress: activeContractsList.testnet.LoyaltyProvider,
+        LoyaltyConsumerAddress: activeContractsList.testnet.LoyaltyConsumer,
+        LoyaltyExchangerAddress: activeContractsList.testnet.LoyaltyExchanger,
+        LoyaltyTransferAddress: activeContractsList.testnet.LoyaltyTransfer,
+        LoyaltyBridgeAddress: activeContractsList.testnet.LoyaltyBridge,
         network: 215115,
-        web3Endpoint: "https://rpc.test.acccoin.io/",
-        relayEndpoint: "https://relay.test.acccoin.io/"
+        web3Endpoint: "https://rpc.test.kioscoin.io/",
+        relayEndpoint: "https://relay.test.kioscoin.io/"
     },
-    acc_devnet: {
-        PhoneLinkCollectionAddress: activeContractsList.acc_devnet.PhoneLinkCollection,
-        LoyaltyTokenAddress: activeContractsList.acc_devnet.LoyaltyToken,
-        ValidatorAddress: activeContractsList.acc_devnet.Validator,
-        CurrencyRateAddress: activeContractsList.acc_devnet.CurrencyRate,
-        ShopAddress: activeContractsList.acc_devnet.Shop,
-        LedgerAddress: activeContractsList.acc_devnet.Ledger,
-        LoyaltyProviderAddress: activeContractsList.acc_devnet.LoyaltyProvider,
-        LoyaltyConsumerAddress: activeContractsList.acc_devnet.LoyaltyConsumer,
-        LoyaltyExchangerAddress: activeContractsList.acc_devnet.LoyaltyExchanger,
-        LoyaltyTransferAddress: activeContractsList.acc_devnet.LoyaltyTransfer,
-        LoyaltyBridgeAddress: activeContractsList.acc_devnet.LoyaltyBridge,
+    devnet: {
+        PhoneLinkCollectionAddress: activeContractsList.devnet.PhoneLinkCollection,
+        LoyaltyTokenAddress: activeContractsList.devnet.LoyaltyToken,
+        ValidatorAddress: activeContractsList.devnet.Validator,
+        CurrencyRateAddress: activeContractsList.devnet.CurrencyRate,
+        ShopAddress: activeContractsList.devnet.Shop,
+        LedgerAddress: activeContractsList.devnet.Ledger,
+        LoyaltyProviderAddress: activeContractsList.devnet.LoyaltyProvider,
+        LoyaltyConsumerAddress: activeContractsList.devnet.LoyaltyConsumer,
+        LoyaltyExchangerAddress: activeContractsList.devnet.LoyaltyExchanger,
+        LoyaltyTransferAddress: activeContractsList.devnet.LoyaltyTransfer,
+        LoyaltyBridgeAddress: activeContractsList.devnet.LoyaltyBridge,
         network: 24680,
-        web3Endpoint: "http://rpc-side.dev.acccoin.io:28545/",
-        relayEndpoint: "http://relay.dev.acccoin.io:27070/"
+        web3Endpoint: "http://rpc-side.dev.kioscoin.io:28545/",
+        relayEndpoint: "http://relay.dev.kioscoin.io:27070/"
     },
     localhost: {
         PhoneLinkCollectionAddress: "",
@@ -71,15 +71,15 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
 
 export const ADDITIONAL_NETWORKS: Network[] = [
     {
-        name: SupportedNetwork.ACC_MAINNET,
-        chainId: 215110
+        name: SupportedNetwork.MAINNET,
+        chainId: 215120
     },
     {
-        name: SupportedNetwork.ACC_TESTNET,
-        chainId: 215115
+        name: SupportedNetwork.TESTNET,
+        chainId: 215125
     },
     {
-        name: SupportedNetwork.ACC_DEVNET,
+        name: SupportedNetwork.DEVNET,
         chainId: 24680
     }
 ];

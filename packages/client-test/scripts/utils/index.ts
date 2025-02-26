@@ -20,7 +20,7 @@ export interface IShopInfo {
 }
 
 export class Helper {
-    static NETWORK = (process.env.NETWORK || "acc_devnet") as SupportedNetwork;
+    static NETWORK = (process.env.NETWORK || "devnet") as SupportedNetwork;
     static RELAY_ACCESS_KEY = process.env.RELAY_ACCESS_KEY || "";
     static SAVE_ACCESS_KEY = process.env.SAVE_ACCESS_KEY || "";
     static SAVE_ENDPOINT = process.env.SAVE_ENDPOINT || "";

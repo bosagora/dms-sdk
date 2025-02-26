@@ -98,7 +98,7 @@ export interface IContractInfo {
 
 export class NodeInfo {
     public static initialAccounts: any[];
-    public static NETWORK_NAME: SupportedNetwork = (process.env.NETWORK_NAME || "acc_devnet") as SupportedNetwork;
+    public static NETWORK_NAME: SupportedNetwork = (process.env.NETWORK_NAME || "devnet") as SupportedNetwork;
     public static RELAY_ACCESS_KEY = process.env.RELAY_ACCESS_KEY || "";
     public static RELAY_ENDPOINT = process.env.RELAY_ENDPOINT || "";
     public static WEB3_ENDPOINT = process.env.WEB3_ENDPOINT || "";

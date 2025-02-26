@@ -1,7 +1,7 @@
 export enum SupportedNetwork {
-    ACC_MAINNET = "acc_mainnet",
-    ACC_TESTNET = "acc_testnet",
-    ACC_DEVNET = "acc_devnet",
+    MAINNET = "mainnet",
+    TESTNET = "testnet",
+    DEVNET = "devnet",
     LOCAL = "localhost"
 }
 

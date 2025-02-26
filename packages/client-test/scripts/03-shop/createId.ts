@@ -6,12 +6,12 @@ async function main() {
     const wallet = Wallet.createRandom();
     let shopId = "";
 
-    if (Helper.NETWORK === "acc_mainnet") {
-        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.ACC_MAINNET);
-    } else if (Helper.NETWORK === "acc_testnet") {
-        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.ACC_TESTNET);
+    if (Helper.NETWORK === "mainnet") {
+        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.MAINNET);
+    } else if (Helper.NETWORK === "testnet") {
+        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.TESTNET);
     } else {
-        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.ACC_TESTNET);
+        shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.TESTNET);
     }
 
     console.log("처리결과입니다.");

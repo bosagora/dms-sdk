@@ -614,8 +614,8 @@ export enum MobileType {
 }
 
 export enum LoyaltyNetworkID {
-    ACC_TESTNET = 1,
-    ACC_MAINNET = 2
+    TESTNET = 3,
+    MAINNET = 4
 }
 
 export interface IChainInfo {

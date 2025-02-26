@@ -275,15 +275,15 @@ export class ContextBuilder {
     }
 
     public static buildContextParamsOfMainnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.ACC_MAINNET, defaultPrivateKey);
+        return ContextBuilder.buildContextParams(SupportedNetwork.MAINNET, defaultPrivateKey);
     }
 
     public static buildContextParamsOfTestnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.ACC_TESTNET, defaultPrivateKey);
+        return ContextBuilder.buildContextParams(SupportedNetwork.TESTNET, defaultPrivateKey);
     }
 
     public static buildContextParamsOfDevnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.ACC_DEVNET, defaultPrivateKey);
+        return ContextBuilder.buildContextParams(SupportedNetwork.DEVNET, defaultPrivateKey);
     }
 
     public static buildContext(networkName: SupportedNetwork, defaultPrivateKey: string): Context {
@@ -292,14 +292,14 @@ export class ContextBuilder {
     }
 
     public static buildContextOfMainnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.ACC_MAINNET, defaultPrivateKey);
+        return ContextBuilder.buildContext(SupportedNetwork.MAINNET, defaultPrivateKey);
     }
 
     public static buildContextOfTestnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.ACC_TESTNET, defaultPrivateKey);
+        return ContextBuilder.buildContext(SupportedNetwork.TESTNET, defaultPrivateKey);
     }
 
     public static buildContextOfDevnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.ACC_DEVNET, defaultPrivateKey);
+        return ContextBuilder.buildContext(SupportedNetwork.DEVNET, defaultPrivateKey);
     }
 }
