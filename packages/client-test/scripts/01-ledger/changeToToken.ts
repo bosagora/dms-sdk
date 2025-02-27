@@ -1,5 +1,5 @@
 import { Helper } from "../utils";
-import { BOACoin } from "../../src/Amount";
+import { BOACoin } from "../../src/utils/Amount";
 import { Client, Context, ContextBuilder, NormalSteps } from "kios-sdk-client-v2";
 
 async function main() {

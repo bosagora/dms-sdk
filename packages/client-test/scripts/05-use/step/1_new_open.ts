@@ -1,7 +1,7 @@
 import { Helper } from "../../utils";
 
-import { HTTPClient } from "../../../src/HttpClient";
-import { Amount } from "../../../src/Amount";
+import { HTTPClient } from "../../../src/network/HTTPClient";
+import { Amount } from "../../../src/utils/Amount";
 import URI from "urijs";
 
 import { Client, Context, ContextBuilder, ContextParams, NormalSteps } from "kios-sdk-client-v2";

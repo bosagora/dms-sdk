@@ -1,7 +1,7 @@
 export enum SupportedNetwork {
-    MAINNET = "mainnet",
-    TESTNET = "testnet",
-    DEVNET = "devnet",
+    KIOS_MAINNET = "kios_mainnet",
+    KIOS_TESTNET = "kios_testnet",
+    KIOS_DEVNET = "kios_devnet",
     LOCAL = "localhost"
 }
 

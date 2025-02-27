@@ -1,4 +1,4 @@
-import { BOACoin } from "../../src/Amount";
+import { BOACoin } from "../../src/utils/Amount";
 import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
 import { Helper } from "../utils";
 

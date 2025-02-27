@@ -3,7 +3,7 @@ import { activeContractsList } from "kios-contracts-lib-v2";
 import { Network } from "@ethersproject/networks";
 
 export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
-    mainnet: {
+    kios_mainnet: {
         PhoneLinkCollectionAddress: activeContractsList.mainnet.PhoneLinkCollection,
         LoyaltyTokenAddress: activeContractsList.mainnet.LoyaltyToken,
         ValidatorAddress: activeContractsList.mainnet.Validator,
@@ -15,11 +15,11 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
         LoyaltyExchangerAddress: activeContractsList.mainnet.LoyaltyExchanger,
         LoyaltyTransferAddress: activeContractsList.mainnet.LoyaltyTransfer,
         LoyaltyBridgeAddress: activeContractsList.mainnet.LoyaltyBridge,
-        network: 215110,
+        network: 215120,
         web3Endpoint: "https://rpc.main.kioscoin.io/",
         relayEndpoint: "https://relay.main.kioscoin.io/"
     },
-    testnet: {
+    kios_testnet: {
         PhoneLinkCollectionAddress: activeContractsList.testnet.PhoneLinkCollection,
         LoyaltyTokenAddress: activeContractsList.testnet.LoyaltyToken,
         ValidatorAddress: activeContractsList.testnet.Validator,
@@ -31,11 +31,11 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
         LoyaltyExchangerAddress: activeContractsList.testnet.LoyaltyExchanger,
         LoyaltyTransferAddress: activeContractsList.testnet.LoyaltyTransfer,
         LoyaltyBridgeAddress: activeContractsList.testnet.LoyaltyBridge,
-        network: 215115,
+        network: 215125,
         web3Endpoint: "https://rpc.test.kioscoin.io/",
         relayEndpoint: "https://relay.test.kioscoin.io/"
     },
-    devnet: {
+    kios_devnet: {
         PhoneLinkCollectionAddress: activeContractsList.devnet.PhoneLinkCollection,
         LoyaltyTokenAddress: activeContractsList.devnet.LoyaltyToken,
         ValidatorAddress: activeContractsList.devnet.Validator,
@@ -71,15 +71,15 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
 
 export const ADDITIONAL_NETWORKS: Network[] = [
     {
-        name: SupportedNetwork.MAINNET,
+        name: SupportedNetwork.KIOS_MAINNET,
         chainId: 215120
     },
     {
-        name: SupportedNetwork.TESTNET,
+        name: SupportedNetwork.KIOS_TESTNET,
         chainId: 215125
     },
     {
-        name: SupportedNetwork.DEVNET,
+        name: SupportedNetwork.KIOS_DEVNET,
         chainId: 24680
     }
 ];

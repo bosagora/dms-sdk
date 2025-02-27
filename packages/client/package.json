@@ -1,6 +1,6 @@
 {
   "name": "kios-sdk-client-v2",
-  "version": "2.20.0",
+  "version": "2.21.0",
   "author": "BOSagora Foundation",
   "license": "AGPL-3.0-or-later",
   "main": "dist/index.js",

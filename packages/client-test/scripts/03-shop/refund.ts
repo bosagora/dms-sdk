@@ -1,6 +1,6 @@
 import { Helper } from "../utils";
 import { Amount, Client, Context, ContextBuilder, NormalSteps } from "kios-sdk-client-v2";
-import { BOACoin } from "../../src/Amount";
+import { BOACoin } from "../../src/utils/Amount";
 import { BigNumber } from "@ethersproject/bignumber";
 
 const beautify = require("beautify");

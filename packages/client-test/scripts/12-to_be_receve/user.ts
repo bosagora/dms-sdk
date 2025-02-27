@@ -1,4 +1,4 @@
-import { HTTPClient } from "../../src/HttpClient";
+import { HTTPClient } from "../../src/network/HTTPClient";
 import { Helper } from "../utils";
 import URI from "urijs";
 import { ContextBuilder, ContextParams } from "kios-sdk-client-v2";
