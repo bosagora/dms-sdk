@@ -1,7 +1,10 @@
 import { Helper } from "../utils";
-import { INewPurchaseData, INewPurchaseDetails } from "../../src/types";
+import { INewPurchaseData, INewPurchaseDetails, NetWorkType } from "../../src/types";
 import { HTTPClient } from "../../src/network/HTTPClient";
+import { SavePurchaseClient } from "../../src/client/SavePurchaseClient";
+
 import URI from "urijs";
+import { CommonUtils } from "../../src/utils/CommonUtils";
 
 const beautify = require("beautify");
 
@@ -37,19 +40,18 @@ async function main() {
         }
         const cashAmount = totalAmount;
 
-        const res: INewPurchaseData = {
+        return {
             purchaseId,
-            timestamp: Helper.getTimeStamp().toString(),
+            timestamp: CommonUtils.getTimeStampBigInt(),
             totalAmount,
             cashAmount,
-            currency: process.env.CURRENCY || "php",
+            currency: process.env.CURRENCY || "krw",
             shopId: shopInfo.shopId,
-            waiting: 0,
+            waiting: BigInt(0),
             userAccount: userInfo.wallet.address,
             userPhone: "",
             details,
         };
-        return res;
     };
 
     console.log("파라메타를 생성합니다.");
@@ -57,21 +59,29 @@ async function main() {
     console.log(tx);
 
     console.log("구매정보를 전달합니다.");
-    const client = new HTTPClient({
-        headers: {
-            Authorization: Helper.SAVE_ACCESS_KEY,
-        },
-    });
-
-    const url = URI(Helper.SAVE_ENDPOINT)
-        .directory("/v1/tx/purchase")
-        .filename("new")
-        .toString();
-    const response = await client.post(url, tx);
+    const network: NetWorkType =
+        Helper.NETWORK === "kios_mainnet"
+            ? NetWorkType.mainnet
+            : Helper.NETWORK === "kios_testnet"
+            ? NetWorkType.testnet
+            : NetWorkType.localhost;
+    const savePurchaseClient = new SavePurchaseClient(network, Helper.SAVE_ACCESS_KEY, Helper.ASSET_ADDRESS);
+    const response = await savePurchaseClient.saveNewPurchase(
+        tx.purchaseId,
+        BigInt(tx.timestamp),
+        BigInt(tx.waiting),
+        tx.totalAmount,
+        tx.cashAmount,
+        tx.currency,
+        tx.shopId,
+        tx.userAccount,
+        tx.userPhone,
+        tx.details
+    );
 
     console.log("처리결과입니다.");
-    console.log(response.data.code);
-    console.log(beautify(JSON.stringify(response.data.data), { format: "json" }));
+    console.log(response.code);
+    console.log(beautify(JSON.stringify(response), { format: "json" }));
 }
 
 main().catch((error) => {

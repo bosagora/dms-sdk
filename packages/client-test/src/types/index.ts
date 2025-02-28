@@ -210,12 +210,12 @@ export interface INewPurchaseDetails {
 
 export interface INewPurchaseData {
     purchaseId: string;
-    timestamp: string;
+    timestamp: bigint;
     totalAmount: number;
     cashAmount: number;
     currency: string;
     shopId: string;
-    waiting: number;
+    waiting: bigint;
     userAccount: string;
     userPhone: string;
     details: INewPurchaseDetails[];

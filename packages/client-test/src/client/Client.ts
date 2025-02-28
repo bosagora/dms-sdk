@@ -33,13 +33,13 @@ export class Client {
             };
         } else if (network === NetWorkType.mainnet) {
             this.endpoints = {
-                relay: "https://relay.main.acccoin.io",
-                save: "https://save.main.acccoin.io",
+                relay: "https://relay.main.kioscoin.io",
+                save: "https://save.main.kioscoin.io",
             };
         } else {
             this.endpoints = {
-                relay: "https://relay.test.acccoin.io",
-                save: "https://save.test.acccoin.io",
+                relay: "https://relay.test.kioscoin.io",
+                save: "https://save.test.kioscoin.io",
             };
         }
     }
@@ -50,7 +50,11 @@ export class Client {
     public async getChainId(): Promise<number> {
         if (this.chainId === 0) {
             const agent = new HTTPClient({});
-            const response = await agent.get(URI(this.endpoints.relay).directory("/v1/chain/side/id").toString());
+            const response = await agent.get(
+                URI(this.endpoints.relay)
+                    .directory("/v1/chain/side/id")
+                    .toString()
+            );
 
             if (response.data.code !== 0) {
                 throw new Error(response.data.error?.message);
@@ -68,7 +72,10 @@ export class Client {
     public async getBalancePhone(phoneNumber: string): Promise<IUserBalance> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/ledger/balance/phone/").filename(phoneNumber).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/ledger/balance/phone/")
+                .filename(phoneNumber)
+                .toString()
         );
 
         if (response.data.code !== 0) {
@@ -94,7 +101,10 @@ export class Client {
     public async getBalancePhoneHash(phoneHash: string): Promise<IUserBalance> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/ledger/balance/phoneHash/").filename(phoneHash).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/ledger/balance/phoneHash/")
+                .filename(phoneHash)
+                .toString()
         );
 
         if (response.data.code !== 0) {
@@ -120,7 +130,10 @@ export class Client {
     public async getBalanceAccount(account: string): Promise<IUserBalance> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/ledger/balance/account/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/ledger/balance/account/")
+                .filename(account)
+                .toString()
         );
 
         if (response.data.code !== 0) {
@@ -147,7 +160,10 @@ export class Client {
     public async getLedgerNonceOf(account: string): Promise<number> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/ledger/nonce/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/ledger/nonce/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
@@ -158,7 +174,10 @@ export class Client {
     public async getShopNonceOf(account: string): Promise<number> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/shop/nonce/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/shop/nonce/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
@@ -170,7 +189,11 @@ export class Client {
     public async getChainInfoOfMainChain(): Promise<IChainInfo> {
         if (this.mainChainInfo !== undefined) return this.mainChainInfo;
         const agent = new HTTPClient({});
-        const res = await agent.get(URI(this.endpoints.relay).directory("/v1/chain/main/info").toString());
+        const res = await agent.get(
+            URI(this.endpoints.relay)
+                .directory("/v1/chain/main/info")
+                .toString()
+        );
         if (res.data.code !== 0) {
             throw new Error(res.data.error?.message);
         }
@@ -200,7 +223,10 @@ export class Client {
     public async getNonceOfMainChainToken(account: string): Promise<BigNumber> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/token/main/nonce/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/token/main/nonce/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
@@ -214,7 +240,10 @@ export class Client {
     public async getBalanceOfMainChainToken(account: string): Promise<BigNumber> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/token/main/balance/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/token/main/balance/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
@@ -234,7 +263,11 @@ export class Client {
     public async getChainInfoOfSideChain(): Promise<IChainInfo> {
         if (this.sideChainInfo !== undefined) return this.sideChainInfo;
         const agent = new HTTPClient({});
-        const res = await agent.get(URI(this.endpoints.relay).directory("/v1/chain/side/info").toString());
+        const res = await agent.get(
+            URI(this.endpoints.relay)
+                .directory("/v1/chain/side/info")
+                .toString()
+        );
         if (res.data.code !== 0) {
             throw new Error(res.data.error?.message);
         }
@@ -272,7 +305,10 @@ export class Client {
     public async getNonceOfSideChainToken(account: string): Promise<BigNumber> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/token/side/nonce/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/token/side/nonce/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
@@ -286,7 +322,10 @@ export class Client {
     public async getBalanceOfSideChainToken(account: string): Promise<BigNumber> {
         const agent = new HTTPClient({});
         const response = await agent.get(
-            URI(this.endpoints.relay).directory("/v1/token/side/balance/").filename(account).toString()
+            URI(this.endpoints.relay)
+                .directory("/v1/token/side/balance/")
+                .filename(account)
+                .toString()
         );
         if (response.data.code !== 0) {
             throw new Error(response.data.error?.message);
