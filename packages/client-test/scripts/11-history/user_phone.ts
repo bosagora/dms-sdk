@@ -1,6 +1,6 @@
 import { Client, Context, ContextBuilder, ContextParams } from "kios-sdk-client-v2";
 import { Helper } from "../utils";
-import { HTTPClient } from "../../src/HttpClient";
+import { HTTPClient } from "../../src/network/HTTPClient";
 import URI from "urijs";
 
 const beautify = require("beautify");
