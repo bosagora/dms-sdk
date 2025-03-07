@@ -1,10 +1,10 @@
 import { Helper } from "../../utils";
 
-import { HTTPClient } from "../../../src/network/HTTPClient";
 import { Amount } from "../../../src/utils/Amount";
-import URI from "urijs";
 
-import { Client, Context, ContextBuilder, ContextParams, NormalSteps } from "kios-sdk-client-v2";
+import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
+import { NetWorkType } from "../../../src/types";
+import { PaymentClient } from "../../../src/client/PaymentClient";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();
@@ -15,18 +15,12 @@ async function main() {
     const context: Context = new Context(contextParams);
     const client = new Client(context);
 
-    const httpClient = new HTTPClient({
-        headers: {
-            Authorization: Helper.RELAY_ACCESS_KEY,
-        },
-    });
-
     const purchase = {
         purchaseId: Helper.getPurchaseId(),
         timestamp: 1672844400,
         amount: 100,
         method: 0,
-        currency: "php",
+        currency: "krw",
         shopIndex: 0,
         userIndex: 0,
     };
@@ -37,28 +31,30 @@ async function main() {
     const temporaryAccount = await client.ledger.getTemporaryAccount();
     console.log(`temporaryAccount: ${temporaryAccount}`);
 
+    const network: NetWorkType =
+        Helper.NETWORK === "kios_mainnet"
+            ? NetWorkType.mainnet
+            : Helper.NETWORK === "kios_testnet"
+            ? NetWorkType.testnet
+            : NetWorkType.localhost;
+    const paymentClient = new PaymentClient(network, Helper.RELAY_ACCESS_KEY);
+
     // Open New
     console.log("Open New");
-    const url1 = URI(contextParams.relayEndpoint)
-        .directory("/v1/payment/new")
-        .filename("open")
-        .toString();
-    const params1 = {
-        purchaseId: purchase.purchaseId,
-        amount: amount.toString(),
-        currency: purchase.currency.toLowerCase(),
-        shopId: shopInfo.shopId,
-        account: temporaryAccount,
-    };
-    const response1 = await httpClient.post(url1, params1);
-    if (response1.data.code !== 0) {
-        console.error("Error!", response1.data.error.message);
-        process.exit(response1.data.code);
-    }
+    const result = await paymentClient.openNewPayment(
+        purchase.purchaseId,
+        temporaryAccount,
+        amount.value,
+        purchase.currency,
+        shopInfo.shopId,
+        ""
+    );
 
-    const paymentId = response1.data.data.paymentId;
+    // @ts-ignore
+    const paymentId = result.paymentId;
     Helper.setPaymentId(paymentId);
     console.log(`paymentId: ${paymentId}`);
+    console.log(`account: ${result.account}`);
 }
 
 main().catch((error) => {

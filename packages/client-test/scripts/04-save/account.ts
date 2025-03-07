@@ -1,9 +1,7 @@
 import { Helper } from "../utils";
 import { INewPurchaseData, INewPurchaseDetails, NetWorkType } from "../../src/types";
-import { HTTPClient } from "../../src/network/HTTPClient";
 import { SavePurchaseClient } from "../../src/client/SavePurchaseClient";
 
-import URI from "urijs";
 import { CommonUtils } from "../../src/utils/CommonUtils";
 
 const beautify = require("beautify");

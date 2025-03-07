@@ -1,9 +1,8 @@
 import { Helper } from "../../utils";
 
-import { HTTPClient } from "../../../src/HttpClient";
-import URI from "urijs";
-
-import { Client, Context, ContextBuilder, ContextParams, NormalSteps } from "kios-sdk-client-v2";
+import { ContextBuilder } from "kios-sdk-client-v2";
+import { NetWorkType } from "../../../src/types";
+import { PaymentClient } from "../../../src/client/PaymentClient";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();
@@ -13,26 +12,19 @@ async function main() {
 
     const paymentId = Helper.getPaymentId();
 
-    const httpClient = new HTTPClient({
-        headers: {
-            Authorization: Helper.RELAY_ACCESS_KEY,
-        },
-    });
+    const network: NetWorkType =
+        Helper.NETWORK === "kios_mainnet"
+            ? NetWorkType.mainnet
+            : Helper.NETWORK === "kios_testnet"
+            ? NetWorkType.testnet
+            : NetWorkType.localhost;
+    const paymentClient = new PaymentClient(network, Helper.RELAY_ACCESS_KEY);
 
     // Open New
     console.log("Open Cancel");
-    const url1 = URI(contextParams.relayEndpoint)
-        .directory("/v1/payment/cancel")
-        .filename("open")
-        .toString();
-    const params1 = {
-        paymentId,
-    };
-    const response1 = await httpClient.post(url1, params1);
-    if (response1.data.code !== 0) {
-        console.error("Error!", response1.data.error.message);
-        process.exit(response1.data.code);
-    }
+    const result = await paymentClient.openCancelPayment(paymentId, "");
+    console.log(`paymentId: ${result.paymentId}`);
+    console.log(`account: ${result.account}`);
 }
 
 main().catch((error) => {

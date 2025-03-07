@@ -1,6 +1,6 @@
 import { Helper } from "../../utils";
 
-import { HTTPClient } from "../../../src/HttpClient";
+import { HTTPClient } from "../../../src/network/HTTPClient";
 import { Amount } from "../../../src/utils/Amount";
 import URI from "urijs";
 

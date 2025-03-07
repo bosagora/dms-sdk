@@ -22,8 +22,6 @@
         "36-shop:getShopIds": "npx ts-node scripts/03-shop/getShopIds.ts",
         "41-save:account": "npx ts-node scripts/04-save/account.ts",
         "42-save:phone": "npx ts-node scripts/04-save/phone.ts",
-        "51-use:new": "npx ts-node scripts/05-use/new.ts",
-        "52-use:cancel": "npx ts-node scripts/05-use/cancel.ts",
         "53-use:1_new_open": "npx ts-node scripts/05-use/step/1_new_open.ts",
         "54-use:2_new_approve": "npx ts-node scripts/05-use/step/2_new_approve.ts",
         "55-use:3_new_close": "npx ts-node scripts/05-use/step/3_new_close.ts",
