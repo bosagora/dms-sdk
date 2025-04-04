@@ -1,6 +1,6 @@
 import { Network } from "../../src/client-common/interfaces/network";
 import { AccountIndex, NodeInfo } from "../helper/NodeInfo";
-import { Amount, Client, Context, ContractUtils, NormalSteps, LoyaltyNetworkID } from "../../src";
+import { Amount, Client, Context, ContractUtils, NormalSteps, LoyaltyNetworkID, ContextParams } from "../../src";
 
 import { IShopData, IUserData, IPurchaseData } from "../helper/types";
 
@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { Wallet } from "@ethersproject/wallet";
 
 describe("Shop Withdrawal", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     const contractInfo = NodeInfo.getContractInfo();
     const accounts = NodeInfo.accounts();
     const validatorWallets = [
@@ -168,6 +168,7 @@ describe("Shop Withdrawal", () => {
 
     let client: Client;
     beforeAll(async () => {
+        contextParams = NodeInfo.getContextParams();
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

@@ -1,4 +1,4 @@
-import { Amount, Client, Context, ContractUtils, NormalSteps } from "../../src";
+import { Amount, Client, Context, ContextParams, ContractUtils, NormalSteps } from "../../src";
 import { Wallet } from "@ethersproject/wallet";
 import { Network } from "../../src/client-common/interfaces/network";
 import { NodeInfo } from "../helper/NodeInfo";
@@ -24,7 +24,7 @@ export interface IShopData {
 }
 
 describe("Ledger", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     // const contractInfo = NodeInfo.getContractInfo();
     // const accounts = NodeInfo.accounts();
     // const validatorWallets = [
@@ -52,7 +52,7 @@ describe("Ledger", () => {
     let user = new Wallet(users[0].privateKey);
 
     beforeAll(async () => {
-        contextParams.privateKey = user.privateKey;
+        contextParams = NodeInfo.getContextParams(user.privateKey);
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

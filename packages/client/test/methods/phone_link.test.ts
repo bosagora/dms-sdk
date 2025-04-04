@@ -1,13 +1,13 @@
-import { Client, Context, ContractUtils, PhoneLinkRegisterSteps, PhoneLinkSubmitSteps } from "../../src";
+import { Client, Context, ContextParams, ContractUtils, PhoneLinkRegisterSteps, PhoneLinkSubmitSteps } from "../../src";
 import { Wallet } from "@ethersproject/wallet";
 import { NodeInfo } from "../helper/NodeInfo";
 
 describe("SDK Client", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     let client: Client;
     let user = Wallet.createRandom();
     beforeAll(async () => {
-        contextParams.privateKey = user.privateKey;
+        contextParams = NodeInfo.getContextParams(user.privateKey);
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

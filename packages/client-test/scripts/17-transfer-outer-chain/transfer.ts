@@ -19,19 +19,21 @@ async function main() {
     if (Helper.WEB3_ENDPOINT_OUTER !== "") contextParam.outer.web3Provider = Helper.WEB3_ENDPOINT_OUTER;
     const ctx: Context = new Context(contextParam);
     const client = new Client(ctx);
+
+    const receiver = "0x3FE8D00143bd0eAd2397D48ba0E31E5E1268dBfb";
+
     console.log("Before");
     console.log(
-        "Balance of Main Chain : ",
-        new BOACoin(await client.ledger.getMainChainBalance(userInfo.wallet.address)).toDisplayString(true, 4)
+        "Balance of Ledger     : ",
+        new BOACoin(await client.ledger.getBalanceOfOuterChainToken(userInfo.wallet.address)).toDisplayString(true, 4)
     );
     console.log(
         "Balance of Ledger     : ",
-        new BOACoin(await client.ledger.getTokenBalance(userInfo.wallet.address)).toDisplayString(true, 4)
+        new BOACoin(await client.ledger.getBalanceOfOuterChainToken(receiver)).toDisplayString(true, 4)
     );
 
-    const amount = Amount.make(100, 18).value;
-    let depositId: string = "";
-    for await (const step of client.ledger.depositViaBridge(amount)) {
+    const amount = BOACoin.make(100).value;
+    for await (const step of client.ledger.transferInOuterChain(receiver, amount)) {
         switch (step.key) {
             case NormalSteps.PREPARED:
                 console.log(`NormalSteps.PREPARED`);
@@ -41,38 +43,22 @@ async function main() {
                 break;
             case NormalSteps.DONE:
                 console.log(`NormalSteps.DONE`);
-                console.log(`depositId: ${step.depositId}`);
-                depositId = step.depositId;
+                console.log(`from: ${step.from}`);
+                console.log(`to: ${step.to}`);
+                console.log(`amount: ${new BOACoin(step.amount).toDisplayString(true, 4)}`);
                 break;
             default:
                 throw new Error("Unexpected bridge step: " + JSON.stringify(step, null, 2));
         }
     }
-
-    for await (const step of client.ledger.waiteDepositViaBridge(depositId, 60)) {
-        switch (step.key) {
-            case WaiteBridgeSteps.CREATED:
-                console.log("WaiteBridgeSteps.CREATED");
-                break;
-            case WaiteBridgeSteps.EXECUTED:
-                console.log("WaiteBridgeSteps.EXECUTED");
-                break;
-            case WaiteBridgeSteps.DONE:
-                console.log("WaiteBridgeSteps.DONE");
-                break;
-            default:
-                throw new Error("Unexpected watch bridge step: " + JSON.stringify(step, null, 2));
-        }
-    }
-
     console.log("After");
     console.log(
-        "Balance of Main Chain : ",
-        new BOACoin(await client.ledger.getMainChainBalance(userInfo.wallet.address)).toDisplayString(true, 4)
+        "Balance of Ledger     : ",
+        new BOACoin(await client.ledger.getBalanceOfOuterChainToken(userInfo.wallet.address)).toDisplayString(true, 4)
     );
     console.log(
         "Balance of Ledger     : ",
-        new BOACoin(await client.ledger.getTokenBalance(userInfo.wallet.address)).toDisplayString(true, 4)
+        new BOACoin(await client.ledger.getBalanceOfOuterChainToken(receiver)).toDisplayString(true, 4)
     );
 }
 

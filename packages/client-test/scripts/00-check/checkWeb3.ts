@@ -4,13 +4,15 @@ import { Helper } from "../utils";
 const beautify = require("beautify");
 
 async function main() {
-    const contextParams: ContextParams = ContextBuilder.buildContextParams(Helper.NETWORK, Helper.TEST_PK);
-    if (Helper.RELAY_ENDPOINT !== "") contextParams.relayEndpoint = Helper.RELAY_ENDPOINT;
-    if (Helper.WEB3_ENDPOINT !== "") contextParams.web3Provider = Helper.WEB3_ENDPOINT;
-    console.log(beautify(JSON.stringify(contextParams), { format: "json" }));
+    const contextParam: ContextParams = ContextBuilder.buildContextParams(Helper.NETWORK, Helper.TEST_PK);
+    if (Helper.RELAY_ENDPOINT !== "") contextParam.relayEndpoint = Helper.RELAY_ENDPOINT;
+    if (Helper.WEB3_ENDPOINT_SIDE !== "") contextParam.side.web3Provider = Helper.WEB3_ENDPOINT_SIDE;
+    if (Helper.WEB3_ENDPOINT_MAIN !== "") contextParam.main.web3Provider = Helper.WEB3_ENDPOINT_MAIN;
+    if (Helper.WEB3_ENDPOINT_OUTER !== "") contextParam.outer.web3Provider = Helper.WEB3_ENDPOINT_OUTER;
+    console.log(beautify(JSON.stringify(contextParam), { format: "json" }));
 
-    const context: Context = new Context(contextParams);
-    const client = new Client(context);
+    const ctx: Context = new Context(contextParam);
+    const client = new Client(ctx);
 
     const web3Status = await client.web3.isUp();
     console.log(`web3Status: ${web3Status}`);

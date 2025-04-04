@@ -23,9 +23,9 @@ describe("Client", () => {
         });
 
         it("Should create a failing client", async () => {
-            contextParamsTestnet.web3Provider = web3EndpointsTestnet.failing;
-            const context = new Context(contextParamsTestnet);
-            const client = new Client(context);
+            contextParamsTestnet.side.web3Provider = web3EndpointsTestnet.failing;
+            const ctx = new Context(contextParamsTestnet);
+            const client = new Client(ctx);
 
             expect(client).toBeInstanceOf(Client);
             expect(client.web3.getProvider()).toBeInstanceOf(JsonRpcProvider);
@@ -49,9 +49,9 @@ describe("Client", () => {
         });
 
         it("Should create a failing client", async () => {
-            contextParamsDevnet.web3Provider = web3EndpointsDevnet.failing;
-            const context = new Context(contextParamsDevnet);
-            const client = new Client(context);
+            contextParamsDevnet.side.web3Provider = web3EndpointsDevnet.failing;
+            const ctx = new Context(contextParamsDevnet);
+            const client = new Client(ctx);
 
             expect(client).toBeInstanceOf(Client);
             expect(client.web3.getProvider()).toBeInstanceOf(JsonRpcProvider);

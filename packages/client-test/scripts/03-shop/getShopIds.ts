@@ -1,16 +1,17 @@
 import { Helper } from "../utils";
-import { Client, Context, ContextBuilder } from "kios-sdk-client-v2";
+import { Client, Context, ContextBuilder, ContextParams } from "kios-sdk-client-v2";
 
 async function main() {
     const shopInfo = Helper.loadShopInfo();
     console.log(`shopId: ${shopInfo.shopId}`);
     console.log(`wallet.address: ${shopInfo.wallet.address}`);
-
-    const contextParams = ContextBuilder.buildContextParams(Helper.NETWORK, shopInfo.wallet.privateKey);
-    if (Helper.RELAY_ENDPOINT !== "") contextParams.relayEndpoint = Helper.RELAY_ENDPOINT;
-    if (Helper.WEB3_ENDPOINT !== "") contextParams.web3Provider = Helper.WEB3_ENDPOINT;
-    const context: Context = new Context(contextParams);
-    const client = new Client(context);
+    const contextParam: ContextParams = ContextBuilder.buildContextParams(Helper.NETWORK, shopInfo.wallet.privateKey);
+    if (Helper.RELAY_ENDPOINT !== "") contextParam.relayEndpoint = Helper.RELAY_ENDPOINT;
+    if (Helper.WEB3_ENDPOINT_SIDE !== "") contextParam.side.web3Provider = Helper.WEB3_ENDPOINT_SIDE;
+    if (Helper.WEB3_ENDPOINT_MAIN !== "") contextParam.main.web3Provider = Helper.WEB3_ENDPOINT_MAIN;
+    if (Helper.WEB3_ENDPOINT_OUTER !== "") contextParam.outer.web3Provider = Helper.WEB3_ENDPOINT_OUTER;
+    const ctx: Context = new Context(contextParam);
+    const client = new Client(ctx);
 
     const accounts = [
         "0x068121F64E3CeC5B747E810c638A3094ae15Fc54",
@@ -32,8 +33,8 @@ async function main() {
         "0xe3812c628b1E0245Eed4A548914e32C9eeFda019",
         "0xe4c63A0e8983D87969eA5E13AbedF8Bd69784FD1",
         "0xea26dF6254d4E54d426f0125Dc02C1A0aCDFB610",
-        "0xfD8072e4809BFADd90ad6D60aF31C8dCd7a46990"
-    ]
+        "0xfD8072e4809BFADd90ad6D60aF31C8dCd7a46990",
+    ];
 
     console.log("처리결과입니다.");
     for (const account of accounts) {

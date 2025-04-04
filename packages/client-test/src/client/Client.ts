@@ -204,14 +204,16 @@ export class Client {
                 chainId: res.data.data.network.chainId,
                 ensAddress: res.data.data.network.ensAddress,
                 chainTransferFee: BigNumber.from(res.data.data.network.chainTransferFee),
-                chainBridgeFee: BigNumber.from(res.data.data.network.chainBridgeFee),
                 loyaltyTransferFee: BigNumber.from(res.data.data.network.loyaltyTransferFee),
                 loyaltyBridgeFee: BigNumber.from(res.data.data.network.loyaltyBridgeFee),
+                innerChainBridgeFee: BigNumber.from(res.data.data.network.innerChainBridgeFee),
+                outerChainBridgeFee: BigNumber.from(res.data.data.network.outerChainBridgeFee),
             },
             contract: {
                 token: res.data.data.contract.token,
-                chainBridge: res.data.data.contract.chainBridge,
                 loyaltyBridge: res.data.data.contract.loyaltyBridge,
+                innerChainBridge: res.data.data.contract.innerChainBridge,
+                outerChainBridge: res.data.data.contract.outerChainBridge,
             },
         };
         return this.mainChainInfo;
@@ -265,7 +267,7 @@ export class Client {
         const agent = new HTTPClient({});
         const res = await agent.get(
             URI(this.endpoints.relay)
-                .directory("/v1/chain/side/info")
+                .directory("/v3/chain/side/info")
                 .toString()
         );
         if (res.data.code !== 0) {
@@ -278,14 +280,16 @@ export class Client {
                 chainId: res.data.data.network.chainId,
                 ensAddress: res.data.data.network.ensAddress,
                 chainTransferFee: BigNumber.from(res.data.data.network.chainTransferFee),
-                chainBridgeFee: BigNumber.from(res.data.data.network.chainBridgeFee),
                 loyaltyTransferFee: BigNumber.from(res.data.data.network.loyaltyTransferFee),
                 loyaltyBridgeFee: BigNumber.from(res.data.data.network.loyaltyBridgeFee),
+                innerChainBridgeFee: BigNumber.from(res.data.data.network.innerChainBridgeFee),
+                outerChainBridgeFee: BigNumber.from(res.data.data.network.outerChainBridgeFee),
             },
             contract: {
                 token: res.data.data.contract.token,
-                chainBridge: res.data.data.contract.chainBridge,
                 loyaltyBridge: res.data.data.contract.loyaltyBridge,
+                innerChainBridge: res.data.data.contract.innerChainBridge,
+                outerChainBridge: res.data.data.contract.outerChainBridge,
             },
         };
         return this.sideChainInfo;

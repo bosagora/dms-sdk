@@ -6,9 +6,9 @@ async function main() {
     const wallet = Wallet.createRandom();
     let shopId = "";
 
-    if (Helper.NETWORK === "kios_mainnet") {
+    if (Helper.NETWORK === "main_group") {
         shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.MAINNET);
-    } else if (Helper.NETWORK === "kios_testnet") {
+    } else if (Helper.NETWORK === "test_group") {
         shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.TESTNET);
     } else {
         shopId = ContractUtils.getShopId(wallet.address, LoyaltyNetworkID.TESTNET);

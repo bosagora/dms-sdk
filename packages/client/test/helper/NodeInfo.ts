@@ -10,7 +10,8 @@ import {
     LIVE_CONTRACTS,
     NonceManager,
     SupportedNetwork,
-    SupportedNetworkArray
+    SupportedNetworkArray,
+    SupportedNetworkGroup
 } from "../../src";
 import {
     CurrencyRate,
@@ -98,10 +99,12 @@ export interface IContractInfo {
 
 export class NodeInfo {
     public static initialAccounts: any[];
-    public static NETWORK_NAME: SupportedNetwork = (process.env.NETWORK_NAME || "devnet") as SupportedNetwork;
+    public static NETWORK_NAME: SupportedNetworkGroup = (process.env.NETWORK_NAME || "devnet") as SupportedNetworkGroup;
     public static RELAY_ACCESS_KEY = process.env.RELAY_ACCESS_KEY || "";
     public static RELAY_ENDPOINT = process.env.RELAY_ENDPOINT || "";
-    public static WEB3_ENDPOINT = process.env.WEB3_ENDPOINT || "";
+    public static WEB3_ENDPOINT_SIDE = process.env.WEB3_ENDPOINT_SIDE || "";
+    public static WEB3_ENDPOINT_MAIN = process.env.WEB3_ENDPOINT_MAIN || "";
+    public static WEB3_ENDPOINT_OUTER = process.env.WEB3_ENDPOINT_OUTER || "";
 
     public static CreateInitialAccounts(): any[] {
         const accounts: string[] = [];
@@ -478,28 +481,36 @@ export class NodeInfo {
 
     public static createProvider(): JsonRpcProvider {
         const networkName = this.NETWORK_NAME;
-        return this.resolveWeb3Provider(LIVE_CONTRACTS[networkName].web3Endpoint, LIVE_CONTRACTS[networkName].network);
+        return this.resolveWeb3Provider(
+            LIVE_CONTRACTS[networkName].side.web3Endpoint,
+            LIVE_CONTRACTS[networkName].side.network
+        );
     }
 
-    public static getContextParams(): ContextParams {
+    public static getContextParams(privateKey: string = ""): ContextParams {
         if (NodeInfo.initialAccounts === undefined) {
             NodeInfo.initialAccounts = NodeInfo.CreateInitialAccounts();
         }
+        const pk = privateKey === "" ? NodeInfo.initialAccounts[0].secretKey : privateKey;
         const networkName = this.NETWORK_NAME;
-        const contextParams = ContextBuilder.buildContextParams(networkName, NodeInfo.initialAccounts[0].secretKey);
+        const contextParams = ContextBuilder.buildContextParams(networkName, pk);
 
         if (NodeInfo.RELAY_ENDPOINT !== "") contextParams.relayEndpoint = NodeInfo.RELAY_ENDPOINT;
-        if (NodeInfo.WEB3_ENDPOINT !== "") contextParams.web3Provider = NodeInfo.WEB3_ENDPOINT;
+        if (NodeInfo.WEB3_ENDPOINT_SIDE !== "") contextParams.side.web3Provider = NodeInfo.WEB3_ENDPOINT_SIDE;
+        if (NodeInfo.WEB3_ENDPOINT_MAIN !== "") contextParams.main.web3Provider = NodeInfo.WEB3_ENDPOINT_MAIN;
+        if (NodeInfo.WEB3_ENDPOINT_OUTER !== "") contextParams.outer.web3Provider = NodeInfo.WEB3_ENDPOINT_OUTER;
 
         console.log(`RELAY_ENDPOINT : ${contextParams.relayEndpoint}`);
-        console.log(`WEB3_ENDPOINT : ${contextParams.web3Provider}`);
+        console.log(`WEB3_ENDPOINT_SIDE : ${contextParams.side.web3Provider}`);
+        console.log(`WEB3_ENDPOINT_MAIN : ${contextParams.main.web3Provider}`);
+        console.log(`WEB3_ENDPOINT_OUTER : ${contextParams.outer.web3Provider}`);
 
         return contextParams;
     }
 
     public static getChainId(): number {
         const contextParams = NodeInfo.getContextParams();
-        return contextParams.network;
+        return contextParams.side.network;
     }
 
     public static getContractInfo(): IContractInfo {
@@ -509,56 +520,56 @@ export class NodeInfo {
         console.log("Start Attach");
 
         console.log("Attach Token");
-        const tokenContract = LoyaltyToken__factory.connect(contextParams.tokenAddress, provider);
+        const tokenContract = LoyaltyToken__factory.connect(contextParams.side.tokenAddress, provider);
 
         console.log("Attach Validator");
-        const validatorContract: Validator = Validator__factory.connect(contextParams.validatorAddress, provider);
+        const validatorContract: Validator = Validator__factory.connect(contextParams.side.validatorAddress, provider);
 
         console.log("Deposit Validator's Amount");
         const linkContract: PhoneLinkCollection = PhoneLinkCollection__factory.connect(
-            contextParams.phoneLinkAddress,
+            contextParams.side.phoneLinkAddress,
             provider
         );
 
         console.log("Attach CurrencyRate");
         const currencyRateContract: CurrencyRate = CurrencyRate__factory.connect(
-            contextParams.currencyRateAddress,
+            contextParams.side.currencyRateAddress,
             provider
         );
 
         console.log("Attach Shop");
-        const shopContract: Shop = Shop__factory.connect(contextParams.shopAddress, provider);
+        const shopContract: Shop = Shop__factory.connect(contextParams.side.shopAddress, provider);
 
         console.log("Attach Ledger");
-        const ledgerContract: Ledger = Ledger__factory.connect(contextParams.ledgerAddress, provider);
+        const ledgerContract: Ledger = Ledger__factory.connect(contextParams.side.ledgerAddress, provider);
 
         console.log("Attach LoyaltyProvider");
         const providerContract: LoyaltyProvider = LoyaltyProvider__factory.connect(
-            contextParams.loyaltyProviderAddress,
+            contextParams.side.loyaltyProviderAddress,
             provider
         );
 
         console.log("Attach LoyaltyConsumer");
         const consumerContract: LoyaltyConsumer = LoyaltyConsumer__factory.connect(
-            contextParams.loyaltyConsumerAddress,
+            contextParams.side.loyaltyConsumerAddress,
             provider
         );
 
         console.log("Attach LoyaltyExchanger");
         const exchangerContract: LoyaltyExchanger = LoyaltyExchanger__factory.connect(
-            contextParams.loyaltyExchangerAddress,
+            contextParams.side.loyaltyExchangerAddress,
             provider
         );
 
         console.log("Attach LoyaltyTransfer");
         const transferContract: LoyaltyTransfer = LoyaltyTransfer__factory.connect(
-            contextParams.loyaltyTransferAddress,
+            contextParams.side.loyaltyTransferAddress,
             provider
         );
 
         console.log("Attach LoyaltyBridge");
         const bridgeContract: LoyaltyBridge = LoyaltyBridge__factory.connect(
-            contextParams.loyaltyBridgeAddress,
+            contextParams.side.loyaltyBridgeAddress,
             provider
         );
 

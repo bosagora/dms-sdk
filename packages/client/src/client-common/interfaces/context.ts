@@ -3,10 +3,9 @@
 import { Signer } from "@ethersproject/abstract-signer";
 import { JsonRpcProvider, Networkish } from "@ethersproject/providers";
 
-// Context input parameters
-type Web3ContextParams = {
-    network: number;
+export type SideWeb3ContextParams = {
     privateKey: string;
+    network: number;
     web3Provider: string;
     phoneLinkAddress: string;
     tokenAddress: string;
@@ -19,18 +18,43 @@ type Web3ContextParams = {
     loyaltyExchangerAddress: string;
     loyaltyTransferAddress: string;
     loyaltyBridgeAddress: string;
+    innerChainBridgeAddress: string;
 };
 
-type RelayContextParams = {
+export type MainWeb3ContextParams = {
+    privateKey: string;
+    network: number;
+    web3Provider: string;
+    tokenAddress: string;
+    loyaltyBridgeAddress: string;
+    innerChainBridgeAddress: string;
+    outerChainBridgeAddress: string;
+};
+
+export type OuterWeb3ContextParams = {
+    privateKey: string;
+    network: number;
+    web3Provider: string;
+    tokenAddress: string;
+    outerChainBridgeAddress: string;
+};
+
+// Context input parameters
+export type Web3ContextParams = {
+    side: SideWeb3ContextParams;
+    main: MainWeb3ContextParams;
+    outer: OuterWeb3ContextParams;
+};
+
+export type RelayContextParams = {
     relayEndpoint: string;
 };
 
 export type ContextParams = Web3ContextParams & RelayContextParams;
 
-// Context state data
-type Web3ContextState = {
-    network: Networkish;
+export type SideWeb3ContextState = {
     signer?: Signer;
+    network: Networkish;
     web3Provider: JsonRpcProvider;
     phoneLinkAddress?: string;
     tokenAddress?: string;
@@ -43,9 +67,35 @@ type Web3ContextState = {
     loyaltyExchangerAddress?: string;
     loyaltyTransferAddress?: string;
     loyaltyBridgeAddress?: string;
+    innerChainBridgeAddress: string;
 };
 
-type RelayContextState = {
+export type MainWeb3ContextState = {
+    signer?: Signer;
+    network: Networkish;
+    web3Provider: JsonRpcProvider;
+    tokenAddress: string;
+    loyaltyBridgeAddress: string;
+    innerChainBridgeAddress: string;
+    outerChainBridgeAddress: string;
+};
+
+export type OuterWeb3ContextState = {
+    signer?: Signer;
+    network: Networkish;
+    web3Provider: JsonRpcProvider;
+    tokenAddress: string;
+    outerChainBridgeAddress: string;
+};
+
+// Context state data
+export type Web3ContextState = {
+    side: SideWeb3ContextState;
+    main: MainWeb3ContextState;
+    outer: OuterWeb3ContextState;
+};
+
+export type RelayContextState = {
     relayEndpoint?: string;
 };
 

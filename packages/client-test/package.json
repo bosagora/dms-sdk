@@ -56,7 +56,11 @@
         "14-agent:unregister_agent_refund": "npx ts-node scripts/14-agent/unregister_agent_refund.ts",
         "14-agent:register_agent_withdrawal": "npx ts-node scripts/14-agent/register_agent_withdrawal.ts",
         "14-agent:unregister_agent_withdrawal": "npx ts-node scripts/14-agent/unregister_agent_withdrawal.ts",
-        "15-transfer:transfer": "npx ts-node scripts/15-transfer/transfer.ts"
+        "15-transfer-ledger:transfer": "npx ts-node scripts/15-transfer-ledger/transfer.ts",
+        "16-chainInfo:outer": "npx ts-node scripts/16-chain-info/outer.ts",
+        "16-chainInfo:main": "npx ts-node scripts/16-chain-info/main.ts",
+        "16-chainInfo:side": "npx ts-node scripts/16-chain-info/side.ts",
+        "17-transfer-outer-chain:transfer": "npx ts-node scripts/17-transfer-outer-chain/transfer.ts"
     },
     "directories": {
         "test": "test"

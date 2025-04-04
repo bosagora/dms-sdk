@@ -1,5 +1,5 @@
 import { AccountIndex, NodeInfo } from "../helper/NodeInfo";
-import { Client, Context, ContractUtils, LoyaltyNetworkID, NormalSteps } from "../../src";
+import { Client, Context, ContextParams, ContractUtils, LoyaltyNetworkID, NormalSteps } from "../../src";
 
 import { IShopData } from "../helper/types";
 
@@ -7,7 +7,7 @@ import { Wallet } from "@ethersproject/wallet";
 import { AddressZero } from "@ethersproject/constants";
 
 describe("Shop Withdrawal", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     const contractInfo = NodeInfo.getContractInfo();
     const accounts = NodeInfo.accounts();
     const validatorWallets = [
@@ -55,6 +55,7 @@ describe("Shop Withdrawal", () => {
 
     let client: Client;
     beforeAll(async () => {
+        contextParams = NodeInfo.getContextParams();
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

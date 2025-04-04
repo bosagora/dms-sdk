@@ -3,6 +3,7 @@ import {
     Amount,
     Client,
     Context,
+    ContextParams,
     ContractUtils,
     DepositSteps,
     LoyaltyNetworkID,
@@ -18,7 +19,7 @@ import { IShopData, IPurchaseData } from "../helper/types";
 import { Wallet } from "@ethersproject/wallet";
 
 describe("Ledger", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     const contractInfo = NodeInfo.getContractInfo();
     const accounts = NodeInfo.accounts();
     const validatorWallets = [
@@ -107,7 +108,7 @@ describe("Ledger", () => {
 
     let client: Client;
     beforeAll(async () => {
-        contextParams.privateKey = userWallets[0].privateKey;
+        contextParams = NodeInfo.getContextParams(userWallets[0].privateKey);
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

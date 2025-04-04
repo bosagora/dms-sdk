@@ -1,5 +1,14 @@
-import { ContextParams, ContextState } from "./interfaces/context";
-import { SupportedNetwork, SupportedNetworkArray } from "./interfaces/common";
+import {
+    ContextParams,
+    MainWeb3ContextParams,
+    OuterWeb3ContextParams,
+    SideWeb3ContextParams,
+    MainWeb3ContextState,
+    OuterWeb3ContextState,
+    SideWeb3ContextState,
+    RelayContextState
+} from "./interfaces/context";
+import { SupportedNetwork, SupportedNetworkArray, SupportedNetworkGroup } from "./interfaces/common";
 import { InvalidAddressError, UnsupportedProtocolError, UnsupportedNetworkError } from "kios-sdk-common-v2";
 import { getNetwork } from "../utils/Utilty";
 import { LIVE_CONTRACTS } from "./constants";
@@ -16,8 +25,8 @@ const supportedProtocols = ["https:", "http:"];
 //     supportedProtocols.push("http:");
 // }
 
-export class Context {
-    protected state: ContextState = Object.assign({});
+export class SideContext {
+    protected state: SideWeb3ContextState = Object.assign({});
 
     // INTERNAL CONTEXT STATE
 
@@ -26,7 +35,7 @@ export class Context {
      *
      * @constructor
      */
-    constructor(params: Partial<ContextParams>) {
+    constructor(params: Partial<SideWeb3ContextParams>) {
         this.set(params);
     }
 
@@ -71,10 +80,6 @@ export class Context {
         return this.state.web3Provider;
     }
 
-    get relayEndpoint() {
-        return this.state.relayEndpoint;
-    }
-
     get tokenAddress(): string | undefined {
         return this.state.tokenAddress;
     }
@@ -112,6 +117,9 @@ export class Context {
     get loyaltyBridgeAddress(): string | undefined {
         return this.state.loyaltyBridgeAddress;
     }
+    get innerChainBridgeAddress(): string | undefined {
+        return this.state.innerChainBridgeAddress;
+    }
 
     // INTERNAL HELPERS
     private static resolveNetwork(networkish: Networkish, ensRegistryAddress?: string): Network {
@@ -135,7 +143,7 @@ export class Context {
         return network;
     }
 
-    private static resolveweb3Provider(endpoint: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
+    private static resolveWeb3Provider(endpoint: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
         if (typeof endpoint === "string") {
             const url = new URL(endpoint);
             if (!supportedProtocols.includes(url.protocol)) {
@@ -147,14 +155,7 @@ export class Context {
         }
     }
 
-    /**
-     * Does set and parse the given context configuration object
-     *
-     * @returns {void}
-     *
-     * @private
-     */
-    setFull(contextParams: ContextParams): void {
+    setFull(contextParams: SideWeb3ContextParams): void {
         if (!contextParams.network) {
             throw new Error("Missing network");
         } else if (!contextParams.privateKey) {
@@ -183,12 +184,14 @@ export class Context {
             throw new Error("Missing loyalty transfer contract address");
         } else if (!contextParams.loyaltyBridgeAddress) {
             throw new Error("Missing loyalty bridge contract address");
+        } else if (!contextParams.innerChainBridgeAddress) {
+            throw new Error("Missing inner chain bridge contract address");
         }
 
         this.state = {
             network: contextParams.network,
             signer: new Wallet(contextParams.privateKey),
-            web3Provider: Context.resolveweb3Provider(contextParams.web3Provider, contextParams.network),
+            web3Provider: SideContext.resolveWeb3Provider(contextParams.web3Provider, contextParams.network),
             tokenAddress: contextParams.tokenAddress,
             phoneLinkAddress: contextParams.phoneLinkAddress,
             validatorAddress: contextParams.validatorAddress,
@@ -199,11 +202,12 @@ export class Context {
             loyaltyConsumerAddress: contextParams.loyaltyConsumerAddress,
             loyaltyExchangerAddress: contextParams.loyaltyExchangerAddress,
             loyaltyTransferAddress: contextParams.loyaltyTransferAddress,
-            loyaltyBridgeAddress: contextParams.loyaltyBridgeAddress
+            loyaltyBridgeAddress: contextParams.loyaltyBridgeAddress,
+            innerChainBridgeAddress: contextParams.innerChainBridgeAddress
         };
     }
 
-    set(contextParams: Partial<ContextParams>) {
+    set(contextParams: Partial<SideWeb3ContextParams>) {
         if (contextParams.network) {
             this.state.network = contextParams.network;
         }
@@ -211,10 +215,7 @@ export class Context {
             this.state.signer = new Wallet(contextParams.privateKey);
         }
         if (contextParams.web3Provider) {
-            this.state.web3Provider = Context.resolveweb3Provider(contextParams.web3Provider, this.state.network);
-        }
-        if (contextParams.relayEndpoint) {
-            this.state.relayEndpoint = contextParams.relayEndpoint;
+            this.state.web3Provider = SideContext.resolveWeb3Provider(contextParams.web3Provider, this.state.network);
         }
         if (contextParams.tokenAddress) {
             this.state.tokenAddress = contextParams.tokenAddress;
@@ -249,57 +250,344 @@ export class Context {
         if (contextParams.loyaltyBridgeAddress) {
             this.state.loyaltyBridgeAddress = contextParams.loyaltyBridgeAddress;
         }
+        if (contextParams.innerChainBridgeAddress) {
+            this.state.innerChainBridgeAddress = contextParams.innerChainBridgeAddress;
+        }
+    }
+}
+
+export class MainContext {
+    protected state: MainWeb3ContextState = Object.assign({});
+
+    constructor(params: Partial<MainWeb3ContextParams>) {
+        this.set(params);
+    }
+
+    get network() {
+        return this.state.network;
+    }
+
+    get signer() {
+        return this.state.signer;
+    }
+
+    get web3Provider() {
+        return this.state.web3Provider;
+    }
+
+    get tokenAddress(): string | undefined {
+        return this.state.tokenAddress;
+    }
+
+    get loyaltyBridgeAddress(): string | undefined {
+        return this.state.loyaltyBridgeAddress;
+    }
+
+    get innerChainBridgeAddress(): string | undefined {
+        return this.state.innerChainBridgeAddress;
+    }
+
+    get outerChainBridgeAddress(): string | undefined {
+        return this.state.outerChainBridgeAddress;
+    }
+
+    // INTERNAL HELPERS
+    private static resolveNetwork(networkish: Networkish, ensRegistryAddress?: string): Network {
+        const network = getNetwork(networkish);
+        const networkName = network.name as SupportedNetwork;
+        if (!SupportedNetworkArray.includes(networkName)) {
+            throw new UnsupportedNetworkError(networkName);
+        }
+
+        if (ensRegistryAddress) {
+            if (!isAddress(ensRegistryAddress)) {
+                throw new InvalidAddressError();
+            } else {
+                network.ensAddress = ensRegistryAddress;
+            }
+        }
+
+        if (!network.ensAddress) {
+            network.ensAddress = AddressZero;
+        }
+        return network;
+    }
+
+    private static resolveWeb3Provider(endpoint: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
+        if (typeof endpoint === "string") {
+            const url = new URL(endpoint);
+            if (!supportedProtocols.includes(url.protocol)) {
+                throw new UnsupportedProtocolError(url.protocol);
+            }
+            return new JsonRpcProvider(url.href, this.resolveNetwork(network));
+        } else {
+            return endpoint;
+        }
+    }
+
+    setFull(contextParams: MainWeb3ContextParams): void {
+        if (!contextParams.network) {
+            throw new Error("Missing network");
+        } else if (!contextParams.privateKey) {
+            throw new Error("Please pass the required signer");
+        } else if (!contextParams.web3Provider) {
+            throw new Error("No web3 endpoints defined");
+        } else if (!contextParams.tokenAddress) {
+            throw new Error("Missing loyalty transfer contract address");
+        } else if (!contextParams.loyaltyBridgeAddress) {
+            throw new Error("Missing loyalty bridge contract address");
+        } else if (!contextParams.innerChainBridgeAddress) {
+            throw new Error("Missing inner chain bridge contract address");
+        } else if (!contextParams.outerChainBridgeAddress) {
+            throw new Error("Missing outer chain bridge contract address");
+        }
+        this.state = {
+            network: contextParams.network,
+            signer: new Wallet(contextParams.privateKey),
+            web3Provider: MainContext.resolveWeb3Provider(contextParams.web3Provider, contextParams.network),
+            tokenAddress: contextParams.tokenAddress,
+            loyaltyBridgeAddress: contextParams.loyaltyBridgeAddress,
+            innerChainBridgeAddress: contextParams.innerChainBridgeAddress,
+            outerChainBridgeAddress: contextParams.outerChainBridgeAddress
+        };
+    }
+
+    set(contextParams: Partial<MainWeb3ContextParams>) {
+        if (contextParams.network) {
+            this.state.network = contextParams.network;
+        }
+        if (contextParams.privateKey) {
+            this.state.signer = new Wallet(contextParams.privateKey);
+        }
+        if (contextParams.web3Provider) {
+            this.state.web3Provider = MainContext.resolveWeb3Provider(contextParams.web3Provider, this.state.network);
+        }
+        if (contextParams.tokenAddress) {
+            this.state.tokenAddress = contextParams.tokenAddress;
+        }
+        if (contextParams.loyaltyBridgeAddress) {
+            this.state.loyaltyBridgeAddress = contextParams.loyaltyBridgeAddress;
+        }
+        if (contextParams.innerChainBridgeAddress) {
+            this.state.innerChainBridgeAddress = contextParams.innerChainBridgeAddress;
+        }
+        if (contextParams.outerChainBridgeAddress) {
+            this.state.outerChainBridgeAddress = contextParams.outerChainBridgeAddress;
+        }
+    }
+}
+
+export class OuterContext {
+    protected state: OuterWeb3ContextState = Object.assign({});
+
+    constructor(params: Partial<OuterWeb3ContextParams>) {
+        this.set(params);
+    }
+
+    get network() {
+        return this.state.network;
+    }
+
+    get signer() {
+        return this.state.signer;
+    }
+
+    get web3Provider() {
+        return this.state.web3Provider;
+    }
+
+    get tokenAddress(): string | undefined {
+        return this.state.tokenAddress;
+    }
+
+    get outerChainBridgeAddress(): string | undefined {
+        return this.state.outerChainBridgeAddress;
+    }
+
+    // INTERNAL HELPERS
+    private static resolveNetwork(networkish: Networkish, ensRegistryAddress?: string): Network {
+        const network = getNetwork(networkish);
+        const networkName = network.name as SupportedNetwork;
+        if (!SupportedNetworkArray.includes(networkName)) {
+            throw new UnsupportedNetworkError(networkName);
+        }
+
+        if (ensRegistryAddress) {
+            if (!isAddress(ensRegistryAddress)) {
+                throw new InvalidAddressError();
+            } else {
+                network.ensAddress = ensRegistryAddress;
+            }
+        }
+
+        if (!network.ensAddress) {
+            network.ensAddress = AddressZero;
+        }
+        return network;
+    }
+
+    private static resolveWeb3Provider(endpoint: string | JsonRpcProvider, network: Networkish): JsonRpcProvider {
+        if (typeof endpoint === "string") {
+            const url = new URL(endpoint);
+            if (!supportedProtocols.includes(url.protocol)) {
+                throw new UnsupportedProtocolError(url.protocol);
+            }
+            return new JsonRpcProvider(url.href, this.resolveNetwork(network));
+        } else {
+            return endpoint;
+        }
+    }
+
+    setFull(contextParams: OuterWeb3ContextParams): void {
+        if (!contextParams.network) {
+            throw new Error("Missing network");
+        } else if (!contextParams.privateKey) {
+            throw new Error("Please pass the required signer");
+        } else if (!contextParams.web3Provider) {
+            throw new Error("No web3 endpoints defined");
+        } else if (!contextParams.tokenAddress) {
+            throw new Error("Missing loyalty transfer contract address");
+        } else if (!contextParams.outerChainBridgeAddress) {
+            throw new Error("Missing outer chain bridge contract address");
+        }
+        this.state = {
+            network: contextParams.network,
+            signer: new Wallet(contextParams.privateKey),
+            web3Provider: OuterContext.resolveWeb3Provider(contextParams.web3Provider, contextParams.network),
+            tokenAddress: contextParams.tokenAddress,
+            outerChainBridgeAddress: contextParams.outerChainBridgeAddress
+        };
+    }
+
+    set(contextParams: Partial<OuterWeb3ContextParams>) {
+        if (contextParams.network) {
+            this.state.network = contextParams.network;
+        }
+        if (contextParams.privateKey) {
+            this.state.signer = new Wallet(contextParams.privateKey);
+        }
+        if (contextParams.web3Provider) {
+            this.state.web3Provider = OuterContext.resolveWeb3Provider(contextParams.web3Provider, this.state.network);
+        }
+        if (contextParams.tokenAddress) {
+            this.state.tokenAddress = contextParams.tokenAddress;
+        }
+        if (contextParams.outerChainBridgeAddress) {
+            this.state.outerChainBridgeAddress = contextParams.outerChainBridgeAddress;
+        }
+    }
+}
+
+export class Context {
+    protected state: RelayContextState = Object.assign({});
+    public side: SideContext;
+    public main: MainContext;
+    public outer: OuterContext;
+
+    // INTERNAL CONTEXT STATE
+
+    /**
+     * @param {Object} params
+     *
+     * @constructor
+     */
+    constructor(params: Partial<ContextParams>) {
+        this.side = new SideContext(params.side as SideWeb3ContextParams);
+        this.main = new MainContext(params.side as SideWeb3ContextParams);
+        this.outer = new OuterContext(params.side as SideWeb3ContextParams);
+        this.set(params);
+    }
+
+    get relayEndpoint() {
+        return this.state.relayEndpoint;
+    }
+
+    /**
+     * Does set and parse the given context configuration object
+     *
+     * @returns {void}
+     *
+     * @private
+     */
+    setFull(contextParams: ContextParams): void {
+        this.state = {
+            relayEndpoint: contextParams.relayEndpoint
+        };
+    }
+
+    set(contextParams: Partial<ContextParams>) {
+        if (contextParams.relayEndpoint) {
+            this.state.relayEndpoint = contextParams.relayEndpoint;
+        }
     }
 }
 
 export class ContextBuilder {
-    public static buildContextParams(networkName: SupportedNetwork, defaultPrivateKey: string): ContextParams {
-        const contextParams: ContextParams = {
-            network: LIVE_CONTRACTS[networkName].network,
-            privateKey: defaultPrivateKey,
-            tokenAddress: LIVE_CONTRACTS[networkName].LoyaltyTokenAddress,
-            phoneLinkAddress: LIVE_CONTRACTS[networkName].PhoneLinkCollectionAddress,
-            validatorAddress: LIVE_CONTRACTS[networkName].ValidatorAddress,
-            currencyRateAddress: LIVE_CONTRACTS[networkName].CurrencyRateAddress,
-            shopAddress: LIVE_CONTRACTS[networkName].ShopAddress,
-            ledgerAddress: LIVE_CONTRACTS[networkName].LedgerAddress,
-            loyaltyProviderAddress: LIVE_CONTRACTS[networkName].LoyaltyProviderAddress,
-            loyaltyConsumerAddress: LIVE_CONTRACTS[networkName].LoyaltyConsumerAddress,
-            loyaltyExchangerAddress: LIVE_CONTRACTS[networkName].LoyaltyExchangerAddress,
-            loyaltyTransferAddress: LIVE_CONTRACTS[networkName].LoyaltyTransferAddress,
-            loyaltyBridgeAddress: LIVE_CONTRACTS[networkName].LoyaltyBridgeAddress,
+    public static buildContextParams(networkName: SupportedNetworkGroup, defaultPrivateKey: string): ContextParams {
+        return {
             relayEndpoint: LIVE_CONTRACTS[networkName].relayEndpoint,
-            web3Provider: LIVE_CONTRACTS[networkName].web3Endpoint
+            side: {
+                network: LIVE_CONTRACTS[networkName].side.network,
+                web3Provider: LIVE_CONTRACTS[networkName].side.web3Endpoint,
+                privateKey: defaultPrivateKey,
+                tokenAddress: LIVE_CONTRACTS[networkName].side.LoyaltyTokenAddress,
+                phoneLinkAddress: LIVE_CONTRACTS[networkName].side.PhoneLinkCollectionAddress,
+                validatorAddress: LIVE_CONTRACTS[networkName].side.ValidatorAddress,
+                currencyRateAddress: LIVE_CONTRACTS[networkName].side.CurrencyRateAddress,
+                shopAddress: LIVE_CONTRACTS[networkName].side.ShopAddress,
+                ledgerAddress: LIVE_CONTRACTS[networkName].side.LedgerAddress,
+                loyaltyProviderAddress: LIVE_CONTRACTS[networkName].side.LoyaltyProviderAddress,
+                loyaltyConsumerAddress: LIVE_CONTRACTS[networkName].side.LoyaltyConsumerAddress,
+                loyaltyExchangerAddress: LIVE_CONTRACTS[networkName].side.LoyaltyExchangerAddress,
+                loyaltyTransferAddress: LIVE_CONTRACTS[networkName].side.LoyaltyTransferAddress,
+                loyaltyBridgeAddress: LIVE_CONTRACTS[networkName].side.LoyaltyBridgeAddress,
+                innerChainBridgeAddress: LIVE_CONTRACTS[networkName].side.InnerChainBridgeAddress
+            },
+            main: {
+                network: LIVE_CONTRACTS[networkName].main.network,
+                web3Provider: LIVE_CONTRACTS[networkName].main.web3Endpoint,
+                privateKey: defaultPrivateKey,
+                tokenAddress: LIVE_CONTRACTS[networkName].main.LoyaltyTokenAddress,
+                loyaltyBridgeAddress: LIVE_CONTRACTS[networkName].main.LoyaltyBridgeAddress,
+                innerChainBridgeAddress: LIVE_CONTRACTS[networkName].main.InnerChainBridgeAddress,
+                outerChainBridgeAddress: LIVE_CONTRACTS[networkName].main.OuterChainBridgeAddress
+            },
+            outer: {
+                network: LIVE_CONTRACTS[networkName].outer.network,
+                web3Provider: LIVE_CONTRACTS[networkName].outer.web3Endpoint,
+                privateKey: defaultPrivateKey,
+                tokenAddress: LIVE_CONTRACTS[networkName].outer.LoyaltyTokenAddress,
+                outerChainBridgeAddress: LIVE_CONTRACTS[networkName].outer.OuterChainBridgeAddress
+            }
         };
-        return contextParams;
     }
 
-    public static buildContextParamsOfMainnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.KIOS_MAINNET, defaultPrivateKey);
+    public static buildContextParamsOfMainGroup(defaultPrivateKey: string): ContextParams {
+        return ContextBuilder.buildContextParams(SupportedNetworkGroup.MAIN_GROUP, defaultPrivateKey);
     }
 
-    public static buildContextParamsOfTestnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.KIOS_TESTNET, defaultPrivateKey);
+    public static buildContextParamsOfTestGroup(defaultPrivateKey: string): ContextParams {
+        return ContextBuilder.buildContextParams(SupportedNetworkGroup.TEST_GROUP, defaultPrivateKey);
     }
 
-    public static buildContextParamsOfDevnet(defaultPrivateKey: string): ContextParams {
-        return ContextBuilder.buildContextParams(SupportedNetwork.KIOS_DEVNET, defaultPrivateKey);
+    public static buildContextParamsOfDevGroup(defaultPrivateKey: string): ContextParams {
+        return ContextBuilder.buildContextParams(SupportedNetworkGroup.DEV_GROUP, defaultPrivateKey);
     }
 
-    public static buildContext(networkName: SupportedNetwork, defaultPrivateKey: string): Context {
+    public static buildContext(networkName: SupportedNetworkGroup, defaultPrivateKey: string): Context {
         const contextParams = ContextBuilder.buildContextParams(networkName, defaultPrivateKey);
         return new Context(contextParams);
     }
 
-    public static buildContextOfMainnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.KIOS_MAINNET, defaultPrivateKey);
+    public static buildContextOfMainGroup(defaultPrivateKey: string): Context {
+        return ContextBuilder.buildContext(SupportedNetworkGroup.MAIN_GROUP, defaultPrivateKey);
     }
 
-    public static buildContextOfTestnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.KIOS_TESTNET, defaultPrivateKey);
+    public static buildContextOfTestGroup(defaultPrivateKey: string): Context {
+        return ContextBuilder.buildContext(SupportedNetworkGroup.TEST_GROUP, defaultPrivateKey);
     }
 
-    public static buildContextOfDevnet(defaultPrivateKey: string): Context {
-        return ContextBuilder.buildContext(SupportedNetwork.KIOS_DEVNET, defaultPrivateKey);
+    public static buildContextOfDevGroup(defaultPrivateKey: string): Context {
+        return ContextBuilder.buildContext(SupportedNetworkGroup.DEV_GROUP, defaultPrivateKey);
     }
 }

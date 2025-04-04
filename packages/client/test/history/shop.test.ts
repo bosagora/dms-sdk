@@ -1,4 +1,4 @@
-import { Amount, Client, Context, ContractUtils, NormalSteps, ShopAction } from "../../src";
+import { Amount, Client, Context, ContextParams, ContractUtils, NormalSteps, ShopAction } from "../../src";
 
 // @ts-ignore
 import fs from "fs";
@@ -34,7 +34,7 @@ export interface IShopData {
 }
 
 describe("Integrated test of Shop", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     const contractInfo = NodeInfo.getContractInfo();
     const accounts = NodeInfo.accounts();
     const validatorWallets = [
@@ -66,7 +66,7 @@ describe("Integrated test of Shop", () => {
         shopIndex = 2;
         shop = shops[shopIndex];
         beforeAll(async () => {
-            contextParams.privateKey = shops[shopIndex].privateKey;
+            const contextParams = NodeInfo.getContextParams(shops[shopIndex].privateKey);
             const ctx = new Context(contextParams);
             client = new Client(ctx);
         });

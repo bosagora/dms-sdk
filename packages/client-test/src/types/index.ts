@@ -181,14 +181,16 @@ export interface IChainInfo {
         chainId: number;
         ensAddress: string;
         chainTransferFee: BigNumber;
-        chainBridgeFee: BigNumber;
         loyaltyTransferFee: BigNumber;
         loyaltyBridgeFee: BigNumber;
+        innerChainBridgeFee: BigNumber;
+        outerChainBridgeFee: BigNumber;
     };
     contract: {
         token: string;
-        chainBridge: string;
         loyaltyBridge: string;
+        innerChainBridge: string;
+        outerChainBridge: string;
     };
 }
 

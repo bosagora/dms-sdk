@@ -14,6 +14,10 @@ export interface IClientWeb3Core {
     getProvider: () => JsonRpcProvider | undefined;
     isUp: () => Promise<boolean>;
     attachContract: <T>(address: string, abi: ContractInterface) => Contract & T;
+    getChainId: () => number;
+}
+
+export interface IClientWeb3SideCore extends IClientWeb3Core {
     getTokenAddress: () => string;
     getLinkAddress: () => string;
     getValidatorAddress: () => string;
@@ -25,7 +29,19 @@ export interface IClientWeb3Core {
     getLoyaltyExchangerAddress: () => string;
     getLoyaltyTransferAddress: () => string;
     getLoyaltyBridgeAddress: () => string;
-    getChainId: () => number;
+    getInnerChainBridgeAddress: () => string;
+}
+
+export interface IClientWeb3MainCore extends IClientWeb3Core {
+    getTokenAddress: () => string;
+    getLoyaltyBridgeAddress: () => string;
+    getInnerChainBridgeAddress: () => string;
+    getOuterChainBridgeAddress: () => string;
+}
+
+export interface IClientWeb3OuterCore extends IClientWeb3Core {
+    getTokenAddress: () => string;
+    getOuterChainBridgeAddress: () => string;
 }
 
 export interface IClientRelayCore {
@@ -36,6 +52,12 @@ export interface IClientRelayCore {
     getNonceOfLedger: (account: string) => Promise<BigNumber>;
     getNonceOfShop: (account: string) => Promise<BigNumber>;
     getNonceOfPhoneLink: (account: string) => Promise<BigNumber>;
+
+    // Outer Chain
+    getChainInfoOfOuterChain: () => Promise<IChainInfo>;
+    getChainIdOfOuterChain: () => Promise<number>;
+    getProviderOfOuterChain: () => Promise<JsonRpcProvider>;
+    getBalanceOfOuterChainToken: (account: string) => Promise<BigNumber>;
 
     // Main Chain
     getChainInfoOfMainChain: () => Promise<IChainInfo>;

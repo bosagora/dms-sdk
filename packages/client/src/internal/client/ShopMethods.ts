@@ -76,7 +76,7 @@ export class ShopMethods extends ClientCore implements IShopMethods {
     }
 
     public async getSummary(shopId: BytesLike): Promise<IShopSummary> {
-        const res = await Network.get(await this.relay.getEndpoint(`/v2/summary/shop/${shopId}`));
+        const res = await Network.get(await this.relay.getEndpoint(`/v3/summary/shop/${shopId}`));
         if (res.code !== 0 || res.data === undefined) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -127,6 +127,24 @@ export class ShopMethods extends ClientCore implements IShopMethods {
                 token: {
                     balance: BigNumber.from(res.data.ledger.token.balance),
                     value: BigNumber.from(res.data.ledger.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.sideChain.native.balance),
+                    symbol: res.data.sideChain.native.symbol
+                }
+            },
+            outerChain: {
+                point: {
+                    balance: BigNumber.from(res.data.outerChain.point.balance),
+                    value: BigNumber.from(res.data.outerChain.point.value)
+                },
+                token: {
+                    balance: BigNumber.from(res.data.outerChain.token.balance),
+                    value: BigNumber.from(res.data.outerChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.outerChain.native.balance),
+                    symbol: res.data.outerChain.native.symbol
                 }
             },
             mainChain: {
@@ -137,6 +155,10 @@ export class ShopMethods extends ClientCore implements IShopMethods {
                 token: {
                     balance: BigNumber.from(res.data.mainChain.token.balance),
                     value: BigNumber.from(res.data.mainChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.mainChain.native.balance),
+                    symbol: res.data.mainChain.native.symbol
                 }
             },
             sideChain: {
@@ -147,12 +169,18 @@ export class ShopMethods extends ClientCore implements IShopMethods {
                 token: {
                     balance: BigNumber.from(res.data.sideChain.token.balance),
                     value: BigNumber.from(res.data.sideChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.sideChain.native.balance),
+                    symbol: res.data.sideChain.native.symbol
                 }
             },
             protocolFees: {
-                transfer: BigNumber.from(res.data.protocolFees.transfer),
-                withdraw: BigNumber.from(res.data.protocolFees.withdraw),
-                deposit: BigNumber.from(res.data.protocolFees.deposit)
+                transferInMainNet: BigNumber.from(res.data.protocolFees.transferInMainNet),
+                withdrawToMainNet: BigNumber.from(res.data.protocolFees.withdrawToMainNet),
+                depositFromMainNet: BigNumber.from(res.data.protocolFees.depositFromMainNet),
+                withdrawToOuterNet: BigNumber.from(res.data.protocolFees.withdrawToOuterNet),
+                depositFromOuterNet: BigNumber.from(res.data.protocolFees.depositFromOuterNet)
             }
         };
     }

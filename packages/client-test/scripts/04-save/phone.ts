@@ -60,9 +60,9 @@ async function main() {
 
     console.log("구매정보를 전달합니다.");
     const network: NetWorkType =
-        Helper.NETWORK === "kios_mainnet"
+        Helper.NETWORK === "main_group"
             ? NetWorkType.mainnet
-            : Helper.NETWORK === "kios_testnet"
+            : Helper.NETWORK === "test_group"
             ? NetWorkType.testnet
             : NetWorkType.localhost;
     const savePurchaseClient = new SavePurchaseClient(network, Helper.SAVE_ACCESS_KEY, Helper.ASSET_ADDRESS);

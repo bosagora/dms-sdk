@@ -473,6 +473,26 @@ export type DelegatedTransferStepValue =
           amount: BigNumber;
           signature: BytesLike;
       };
+export type ERC20TransferStepValue =
+    | {
+          key: NormalSteps.PREPARED;
+          from: string;
+          to: string;
+          amount: BigNumber;
+      }
+    | {
+          key: NormalSteps.SENT;
+          from: string;
+          to: string;
+          amount: BigNumber;
+          txHash: BytesLike;
+      }
+    | {
+          key: NormalSteps.DONE;
+          from: string;
+          to: string;
+          amount: BigNumber;
+      };
 
 // Withdraw Bridge
 export type DepositViaBridgeStepValue =
@@ -625,14 +645,16 @@ export interface IChainInfo {
         chainId: number;
         ensAddress: string;
         chainTransferFee: BigNumber;
-        chainBridgeFee: BigNumber;
         loyaltyTransferFee: BigNumber;
         loyaltyBridgeFee: BigNumber;
+        innerChainBridgeFee: BigNumber;
+        outerChainBridgeFee: BigNumber;
     };
     contract: {
         token: string;
-        chainBridge: string;
         loyaltyBridge: string;
+        innerChainBridge: string;
+        outerChainBridge: string;
     };
 }
 
@@ -662,12 +684,18 @@ export interface IBalance {
         balance: BigNumber;
         value: BigNumber;
     };
+    native: {
+        balance: BigNumber;
+        symbol: string;
+    };
 }
 
 export interface IProtocolFees {
-    transfer: BigNumber;
-    withdraw: BigNumber;
-    deposit: BigNumber;
+    transferInMainNet: BigNumber;
+    withdrawToMainNet: BigNumber;
+    depositFromMainNet: BigNumber;
+    withdrawToOuterNet: BigNumber;
+    depositFromOuterNet: BigNumber;
 }
 
 export interface IShopInfo {
@@ -707,6 +735,7 @@ export interface IAccountSummary {
     provider: IProvisionInfo;
     agent: IAgentInfo;
     ledger: IBalance;
+    outerChain: IBalance;
     mainChain: IBalance;
     sideChain: IBalance;
     protocolFees: IProtocolFees;
@@ -719,6 +748,7 @@ export interface IShopSummary {
     settlement: ISettlementInfo;
     agent: IAgentInfo;
     ledger: IBalance;
+    outerChain: IBalance;
     mainChain: IBalance;
     sideChain: IBalance;
     protocolFees: IProtocolFees;
@@ -734,7 +764,8 @@ export interface ISystemInfo {
     };
     language: string;
     support: {
-        chainBridge: boolean;
+        outerChainBridge: boolean;
+        innerChainBridge: boolean;
         loyaltyBridge: boolean;
         exchange: boolean;
     };

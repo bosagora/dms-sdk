@@ -5,7 +5,7 @@ global.XMLHttpRequest = require("xhr2");
 
 import { Wallet } from "ethers";
 import fs from "fs";
-import { SupportedNetwork } from "kios-sdk-client-v2";
+import { SupportedNetwork, SupportedNetworkGroup } from "kios-sdk-client-v2";
 
 export interface IUserInfo {
     phone: string;
@@ -20,14 +20,23 @@ export interface IShopInfo {
 }
 
 export class Helper {
-    static NETWORK = (process.env.NETWORK || "devnet") as SupportedNetwork;
+    static NETWORK = (process.env.NETWORK || "devnet") as SupportedNetworkGroup;
     static RELAY_ACCESS_KEY = process.env.RELAY_ACCESS_KEY || "";
     static SAVE_ACCESS_KEY = process.env.SAVE_ACCESS_KEY || "";
     static SAVE_ENDPOINT = process.env.SAVE_ENDPOINT || "";
     static RELAY_ENDPOINT = process.env.RELAY_ENDPOINT || "";
-    static WEB3_ENDPOINT = process.env.WEB3_ENDPOINT || "";
     static ASSET_ADDRESS = process.env.ASSET_ADDRESS || "";
     static TEST_PK = "0xd09672244a06a32f74d051e5adbbb62ae0eda27832a973159d475da6d53ba5c0";
+
+    static WEB3_ENDPOINT_SIDE = process.env.WEB3_ENDPOINT_SIDE || "";
+    static WEB3_ENDPOINT_MAIN = process.env.WEB3_ENDPOINT_MAIN || "";
+    static WEB3_ENDPOINT_OUTER = process.env.WEB3_ENDPOINT_OUTER || "";
+
+    static WEB3_ENDPOINTS = [
+        process.env.WEB3_ENDPOINT_SIDE || "",
+        process.env.WEB3_ENDPOINT_MAIN || "",
+        process.env.WEB3_ENDPOINT_OUTER || "",
+    ];
 
     public static loadUserInfo(): IUserInfo {
         const data: {

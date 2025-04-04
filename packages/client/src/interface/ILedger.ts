@@ -20,7 +20,8 @@ import {
     IAccountSummary,
     RegisterAgentStepValue,
     RegisterAssistantStepValue,
-    ISystemInfo
+    ISystemInfo,
+    ERC20TransferStepValue
 } from "../interfaces";
 import { BigNumber } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
@@ -87,6 +88,13 @@ export interface ILedgerMethods extends IClientCore {
     isExistsMobileToken: (type: MobileType, shopId?: string) => Promise<boolean>;
     isExistsMobileAccountToken: (token: string, type: MobileType, shopId?: string) => Promise<boolean>;
     removePhoneInfo: () => AsyncGenerator<RemovePhoneInfoStepValue>;
+
+    // Outer Chain
+    getChainInfoOfOuterChain: () => Promise<IChainInfo>;
+    getProviderOfOuterChain: () => Promise<JsonRpcProvider>;
+    getOuterChainBalance: (account: string) => Promise<BigNumber>;
+    getBalanceOfOuterChainToken: (account: string) => Promise<BigNumber>;
+    transferInOuterChain: (to: string, amount: BigNumber) => AsyncGenerator<ERC20TransferStepValue>;
 
     // Main Chain
     getChainInfoOfMainChain: () => Promise<IChainInfo>;

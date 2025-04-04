@@ -1,5 +1,5 @@
 import { AccountIndex, NodeInfo } from "../helper/NodeInfo";
-import { Amount, Client, Context, ContractUtils, NormalSteps, WaiteBridgeSteps } from "../../src";
+import { Amount, Client, Context, ContextParams, ContractUtils, NormalSteps, WaiteBridgeSteps } from "../../src";
 
 import * as fs from "fs";
 
@@ -12,7 +12,7 @@ interface IUserData {
 }
 
 describe("LoyaltyBridge", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     const contractInfo = NodeInfo.getContractInfo();
     const accounts = NodeInfo.accounts();
     const validatorWallets = [
@@ -38,7 +38,7 @@ describe("LoyaltyBridge", () => {
     const users: IUserData[] = JSON.parse(fs.readFileSync("test/helper/users.json", "utf8")) as IUserData[];
 
     beforeAll(async () => {
-        contextParams.privateKey = users[0].privateKey;
+        contextParams = NodeInfo.getContextParams(users[0].privateKey);
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

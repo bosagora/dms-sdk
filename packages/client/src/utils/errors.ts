@@ -166,6 +166,18 @@ export class NoLoyaltyBridgeAddress extends Error {
     }
 }
 
+export class NoInnerChainBridgeAddress extends Error {
+    constructor() {
+        super("A inner chain bridge address is needed");
+    }
+}
+
+export class NoOuterChainBridgeAddress extends Error {
+    constructor() {
+        super("A outer chain bridge address is needed");
+    }
+}
+
 export class FailedDepositError extends Error {
     constructor() {
         super("Failed to deposit");

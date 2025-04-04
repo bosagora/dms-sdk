@@ -3,7 +3,7 @@ import { JsonRpcProvider, Networkish } from "@ethersproject/providers";
 import { Contract, ContractInterface } from "@ethersproject/contracts";
 import { Signer } from "@ethersproject/abstract-signer";
 import { IClientWeb3Core } from "../interfaces/core";
-import { Context } from "../context";
+import { SideContext } from "../context";
 import {
     NoShopCollectionAddress,
     NoLedgerAddress,
@@ -16,29 +16,31 @@ import {
     NoLoyaltyExchangerAddress,
     NoLoyaltyTransferAddress,
     NoLoyaltyBridgeAddress,
-    NoNetwork
+    NoNetwork,
+    NoInnerChainBridgeAddress
 } from "../../utils/errors";
 
 import { UnsupportedNetworkError } from "kios-sdk-common-v2";
 
-const networkMap = new Map<Web3Module, Networkish>();
-const providersMap = new Map<Web3Module, JsonRpcProvider>();
-const signerMap = new Map<Web3Module, Signer>();
+const networkMap = new Map<Web3SideChainModule, Networkish>();
+const providersMap = new Map<Web3SideChainModule, JsonRpcProvider>();
+const signerMap = new Map<Web3SideChainModule, Signer>();
 
-const tokenAddressMap = new Map<Web3Module, string>();
-const linkAddressMap = new Map<Web3Module, string>();
-const validatorAddressMap = new Map<Web3Module, string>();
-const currencyRateAddressMap = new Map<Web3Module, string>();
-const shopAddressMap = new Map<Web3Module, string>();
-const ledgerAddressMap = new Map<Web3Module, string>();
-const providerAddressMap = new Map<Web3Module, string>();
-const consumerAddressMap = new Map<Web3Module, string>();
-const exchangerAddressMap = new Map<Web3Module, string>();
-const transferAddressMap = new Map<Web3Module, string>();
-const bridgeAddressMap = new Map<Web3Module, string>();
+const tokenAddressMap = new Map<Web3SideChainModule, string>();
+const linkAddressMap = new Map<Web3SideChainModule, string>();
+const validatorAddressMap = new Map<Web3SideChainModule, string>();
+const currencyRateAddressMap = new Map<Web3SideChainModule, string>();
+const shopAddressMap = new Map<Web3SideChainModule, string>();
+const ledgerAddressMap = new Map<Web3SideChainModule, string>();
+const providerAddressMap = new Map<Web3SideChainModule, string>();
+const consumerAddressMap = new Map<Web3SideChainModule, string>();
+const exchangerAddressMap = new Map<Web3SideChainModule, string>();
+const transferAddressMap = new Map<Web3SideChainModule, string>();
+const loyaltyBridgeAddressMap = new Map<Web3SideChainModule, string>();
+const innerChainBridgeAddressMap = new Map<Web3SideChainModule, string>();
 
-export class Web3Module implements IClientWeb3Core {
-    constructor(context: Context) {
+export class Web3SideChainModule implements IClientWeb3Core {
+    constructor(context: SideContext) {
         // Storing client data in the private module's scope to prevent external mutation
         if (context.network) {
             networkMap.set(this, context.network);
@@ -93,10 +95,14 @@ export class Web3Module implements IClientWeb3Core {
         }
 
         if (context.loyaltyBridgeAddress) {
-            bridgeAddressMap.set(this, context.loyaltyBridgeAddress);
+            loyaltyBridgeAddressMap.set(this, context.loyaltyBridgeAddress);
         }
 
-        Object.freeze(Web3Module.prototype);
+        if (context.innerChainBridgeAddress) {
+            innerChainBridgeAddressMap.set(this, context.innerChainBridgeAddress);
+        }
+
+        Object.freeze(Web3SideChainModule.prototype);
         Object.freeze(this);
     }
 
@@ -145,7 +151,11 @@ export class Web3Module implements IClientWeb3Core {
     }
 
     private get loyaltyBridgeAddress(): string {
-        return bridgeAddressMap.get(this) || "";
+        return loyaltyBridgeAddressMap.get(this) || "";
+    }
+
+    private get innerChainBridgeAddress(): string {
+        return innerChainBridgeAddressMap.get(this) || "";
     }
 
     private get provider(): JsonRpcProvider | undefined {
@@ -333,5 +343,12 @@ export class Web3Module implements IClientWeb3Core {
             throw new NoLoyaltyBridgeAddress();
         }
         return this.loyaltyBridgeAddress;
+    }
+
+    public getInnerChainBridgeAddress(): string {
+        if (!this.innerChainBridgeAddress) {
+            throw new NoInnerChainBridgeAddress();
+        }
+        return this.innerChainBridgeAddress;
     }
 }

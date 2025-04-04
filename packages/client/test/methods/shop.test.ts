@@ -1,4 +1,4 @@
-import { Client, Context, ContractUtils, LoyaltyNetworkID, NormalSteps, ShopStatus } from "../../src";
+import { Client, Context, ContextParams, ContractUtils, LoyaltyNetworkID, NormalSteps, ShopStatus } from "../../src";
 import { Wallet } from "@ethersproject/wallet";
 import { Network } from "../../src/client-common/interfaces/network";
 
@@ -15,7 +15,7 @@ export interface IShopData {
 }
 
 describe("Shop", () => {
-    const contextParams = NodeInfo.getContextParams();
+    let contextParams: ContextParams;
     let client: Client;
 
     let shopData: IShopData;
@@ -32,7 +32,7 @@ describe("Shop", () => {
     });
 
     beforeAll(async () => {
-        contextParams.privateKey = shopWallet.privateKey;
+        contextParams = NodeInfo.getContextParams(shopWallet.privateKey);
         const ctx = new Context(contextParams);
         client = new Client(ctx);
     });

@@ -14,7 +14,9 @@ import {
     LoyaltyTransfer,
     LoyaltyTransfer__factory,
     PhoneLinkCollection,
-    PhoneLinkCollection__factory
+    PhoneLinkCollection__factory,
+    BIP20,
+    BIP20__factory
 } from "kios-contracts-lib-v2";
 import { JsonRpcProvider, Provider } from "@ethersproject/providers";
 import { NoProviderError, NoSignerError, UpdateAllowanceError } from "kios-sdk-common-v2";
@@ -47,7 +49,8 @@ import {
     IAccountSummary,
     RegisterAgentStepValue,
     RegisterAssistantStepValue,
-    ISystemInfo
+    ISystemInfo,
+    ERC20TransferStepValue
 } from "../../interfaces";
 import {
     AmountMismatchError,
@@ -69,6 +72,7 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { ContractTransaction } from "@ethersproject/contracts";
 import { AddressZero, HashZero } from "@ethersproject/constants";
 import { BytesLike } from "@ethersproject/bytes";
+import { Signer } from "@ethersproject/abstract-signer";
 
 /**
  * 사용자의 포인트/토큰의 잔고와 제품구매를 하는 기능이 포함되어 있다.
@@ -88,7 +92,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
 
     // region Balance
     public async getSummary(account: string): Promise<IAccountSummary> {
-        const res = await Network.get(await this.relay.getEndpoint(`/v2/summary/account/${account}`));
+        const res = await Network.get(await this.relay.getEndpoint(`/v3/summary/account/${account}`));
         if (res.code !== 0 || res.data === undefined) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
@@ -127,6 +131,24 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
                 token: {
                     balance: BigNumber.from(res.data.ledger.token.balance),
                     value: BigNumber.from(res.data.ledger.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.sideChain.native.balance),
+                    symbol: res.data.sideChain.native.symbol
+                }
+            },
+            outerChain: {
+                point: {
+                    balance: BigNumber.from(res.data.outerChain.point.balance),
+                    value: BigNumber.from(res.data.outerChain.point.value)
+                },
+                token: {
+                    balance: BigNumber.from(res.data.outerChain.token.balance),
+                    value: BigNumber.from(res.data.outerChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.outerChain.native.balance),
+                    symbol: res.data.outerChain.native.symbol
                 }
             },
             mainChain: {
@@ -137,6 +159,10 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
                 token: {
                     balance: BigNumber.from(res.data.mainChain.token.balance),
                     value: BigNumber.from(res.data.mainChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.mainChain.native.balance),
+                    symbol: res.data.mainChain.native.symbol
                 }
             },
             sideChain: {
@@ -147,12 +173,18 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
                 token: {
                     balance: BigNumber.from(res.data.sideChain.token.balance),
                     value: BigNumber.from(res.data.sideChain.token.value)
+                },
+                native: {
+                    balance: BigNumber.from(res.data.sideChain.native.balance),
+                    symbol: res.data.sideChain.native.symbol
                 }
             },
             protocolFees: {
-                transfer: BigNumber.from(res.data.protocolFees.transfer),
-                withdraw: BigNumber.from(res.data.protocolFees.withdraw),
-                deposit: BigNumber.from(res.data.protocolFees.deposit)
+                transferInMainNet: BigNumber.from(res.data.protocolFees.transferInMainNet),
+                withdrawToMainNet: BigNumber.from(res.data.protocolFees.withdrawToMainNet),
+                depositFromMainNet: BigNumber.from(res.data.protocolFees.depositFromMainNet),
+                withdrawToOuterNet: BigNumber.from(res.data.protocolFees.withdrawToOuterNet),
+                depositFromOuterNet: BigNumber.from(res.data.protocolFees.depositFromOuterNet)
             }
         };
     }
@@ -1321,6 +1353,89 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
     }
     // endregion
 
+    // region Outer Chain
+
+    /**
+     * Outer 체인의 정보를 제공한다.
+     */
+    public async getChainInfoOfOuterChain(): Promise<IChainInfo> {
+        return this.relay.getChainInfoOfOuterChain();
+    }
+
+    /**
+     * Outer 체인의 체인아이디를 제공한다.
+     */
+    public async getChainIdOfOuterChain(): Promise<number> {
+        return this.relay.getChainIdOfOuterChain();
+    }
+
+    /**
+     * Outer 체인의 Provider를 제공한다.
+     */
+    public async getProviderOfOuterChain(): Promise<JsonRpcProvider> {
+        return this.relay.getProviderOfOuterChain();
+    }
+
+    /**
+     * Outer 체인의 토큰잔고를 제공한다.
+     */
+    public async getOuterChainBalance(account: string): Promise<BigNumber> {
+        return this.relay.getBalanceOfOuterChainToken(account);
+    }
+
+    /**
+     * Outer 체인의 토큰잔고를 제공한다. getMainChainBalance 와 동일하다
+     */
+    public async getBalanceOfOuterChainToken(account: string): Promise<BigNumber> {
+        return this.relay.getBalanceOfOuterChainToken(account);
+    }
+
+    public async getSignerInOuterChain(): Promise<Signer> {
+        const signer = this.web3Outer.getConnectedSigner();
+        if (!signer) {
+            throw new NoSignerError();
+        } else if (!signer.provider) {
+            throw new NoProviderError();
+        }
+        return new NonceManager(new GasPriceManager(signer));
+    }
+
+    public async *transferInOuterChain(to: string, amount: BigNumber): AsyncGenerator<ERC20TransferStepValue> {
+        const signer = await this.getSignerInOuterChain();
+        const info = await this.getChainInfoOfOuterChain();
+        const account = await signer.getAddress();
+        yield {
+            key: NormalSteps.PREPARED,
+            from: account,
+            to: to,
+            amount: amount
+        };
+
+        const tokenInstance: BIP20 = BIP20__factory.connect(info.contract.token, signer);
+        const tx = await tokenInstance.transfer(to, amount);
+
+        yield {
+            key: NormalSteps.SENT,
+            from: account,
+            to: to,
+            amount: amount,
+            txHash: tx.hash
+        };
+
+        const contractReceipt = await tx.wait();
+        const log = findLog(contractReceipt, tokenInstance.interface, "Transfer");
+        if (log === undefined) {
+            throw new FailedTransactionError();
+        }
+
+        yield {
+            key: NormalSteps.DONE,
+            from: account,
+            to: to,
+            amount: amount
+        };
+    }
+
     // region Main Chain
 
     /**
@@ -1670,12 +1785,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
      * @param pageSize 페이지당 항목의 갯수
      */
     public async getProvideHistory(account: string, pageNumber: number = 1, pageSize: number = 10): Promise<any> {
-        return await this.getAccountHistory(
-            account,
-            [LedgerAction.PROVIDE_OUT],
-            pageNumber,
-            pageSize
-        );
+        return await this.getAccountHistory(account, [LedgerAction.PROVIDE_OUT], pageNumber, pageSize);
     }
     // endregion
 
@@ -1868,7 +1978,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
     }
 
     public async getSystemInfo(): Promise<ISystemInfo> {
-        const res = await Network.get(await this.relay.getEndpoint(`/v1/system/info`));
+        const res = await Network.get(await this.relay.getEndpoint(`/v3/system/info`));
         if (res.code !== 0 || res.data === undefined) {
             throw new InternalServerError(res?.error?.message ?? "");
         }
