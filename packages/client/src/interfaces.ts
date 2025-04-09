@@ -496,6 +496,7 @@ export type ERC20TransferStepValue =
 
 // Withdraw Bridge
 export type DepositViaBridgeStepValue =
+    | UpdateAllowanceStepValue
     | {
           key: NormalSteps.PREPARED;
           account: string;
@@ -524,6 +525,7 @@ export type DepositViaBridgeStepValue =
 
 // Withdraw Bridge
 export type WithdrawViaBridgeStepValue =
+    | UpdateAllowanceStepValue
     | {
           key: NormalSteps.PREPARED;
           account: string;

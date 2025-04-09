@@ -50,7 +50,8 @@ import {
     RegisterAgentStepValue,
     RegisterAssistantStepValue,
     ISystemInfo,
-    ERC20TransferStepValue
+    ERC20TransferStepValue,
+    WithdrawViaBridgeStepValue
 } from "../../interfaces";
 import {
     AmountMismatchError,
@@ -2275,5 +2276,107 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
         await contractTx.wait();
 
         yield { key: NormalSteps.DONE, account, agent };
+    }
+
+    /**
+     * 허용된 금액이 충분한지 확인하고 그렇지 않으면 업데이트합니다.
+     * @param {UpdateAllowanceParams} params
+     * @return {*}  {AsyncGenerator<UpdateAllowanceStepValue>}
+     */
+    public async *updateAllowanceInMainNet(params: UpdateAllowanceParams): AsyncGenerator<UpdateAllowanceStepValue> {
+        const signer = this.web3Main.getConnectedSigner();
+        if (!signer) {
+            throw new NoSignerError();
+        } else if (!signer.provider) {
+            throw new NoProviderError();
+        }
+
+        const nonceSigner = new NonceManager(new GasPriceManager(signer));
+        const tokenInstance = BIP20__factory.connect(params.tokenAddress, nonceSigner);
+        const currentAllowance = await tokenInstance.allowance(await signer.getAddress(), params.targetAddress);
+
+        yield {
+            key: DepositSteps.CHECKED_ALLOWANCE,
+            allowance: currentAllowance
+        };
+
+        if (currentAllowance.gte(params.amount)) return;
+
+        const tx: ContractTransaction = await tokenInstance.approve(
+            params.targetAddress,
+            BigNumber.from(params.amount)
+        );
+
+        yield {
+            key: DepositSteps.UPDATING_ALLOWANCE,
+            txHash: tx.hash
+        };
+
+        const cr = await tx.wait();
+        const log = findLog(cr, tokenInstance.interface, "Approval");
+
+        if (!log) {
+            throw new UpdateAllowanceError();
+        }
+        const value = log.data;
+        if (!value || BigNumber.from(params.amount).gt(BigNumber.from(value))) {
+            throw new UpdateAllowanceError();
+        }
+
+        yield {
+            key: DepositSteps.UPDATED_ALLOWANCE,
+            allowance: params.amount
+        };
+    }
+
+    /**
+     * 허용된 금액이 충분한지 확인하고 그렇지 않으면 업데이트합니다.
+     * @param {UpdateAllowanceParams} params
+     * @return {*}  {AsyncGenerator<UpdateAllowanceStepValue>}
+     */
+    public async *updateAllowanceInOuterNet(params: UpdateAllowanceParams): AsyncGenerator<UpdateAllowanceStepValue> {
+        const signer = this.web3Outer.getConnectedSigner();
+        if (!signer) {
+            throw new NoSignerError();
+        } else if (!signer.provider) {
+            throw new NoProviderError();
+        }
+
+        const nonceSigner = new NonceManager(new GasPriceManager(signer));
+        const tokenInstance = BIP20__factory.connect(params.tokenAddress, nonceSigner);
+        const currentAllowance = await tokenInstance.allowance(await signer.getAddress(), params.targetAddress);
+
+        yield {
+            key: DepositSteps.CHECKED_ALLOWANCE,
+            allowance: currentAllowance
+        };
+
+        if (currentAllowance.gte(params.amount)) return;
+
+        const tx: ContractTransaction = await tokenInstance.approve(
+            params.targetAddress,
+            BigNumber.from(params.amount)
+        );
+
+        yield {
+            key: DepositSteps.UPDATING_ALLOWANCE,
+            txHash: tx.hash
+        };
+
+        const cr = await tx.wait();
+        const log = findLog(cr, tokenInstance.interface, "Approval");
+
+        if (!log) {
+            throw new UpdateAllowanceError();
+        }
+        const value = log.data;
+        if (!value || BigNumber.from(params.amount).gt(BigNumber.from(value))) {
+            throw new UpdateAllowanceError();
+        }
+
+        yield {
+            key: DepositSteps.UPDATED_ALLOWANCE,
+            allowance: params.amount
+        };
     }
 }
