@@ -1,4 +1,4 @@
-import { Helper } from "../utils";
+import { Helper } from "../../utils";
 import {
     Amount,
     Client,
@@ -8,7 +8,7 @@ import {
     NormalSteps,
     WaiteBridgeSteps,
 } from "kios-sdk-client-v2";
-import { BOACoin } from "../../src/utils/Amount";
+import { BOACoin } from "../../../src/utils/Amount";
 
 async function main() {
     const userInfo = Helper.loadUserInfo();

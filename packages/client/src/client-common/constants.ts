@@ -71,8 +71,8 @@ export const LIVE_CONTRACTS: { [K in SupportedNetworkGroup]: NetworkDeployment }
     },
     dev_group: {
         side: {
-            network: 24680,
-            web3Endpoint: "http://127.0.0.1:8545",
+            network: 24000,
+            web3Endpoint: "http://127.0.0.1:8500",
             PhoneLinkCollectionAddress: activeContractsList.devnet.PhoneLinkCollection,
             LoyaltyTokenAddress: activeContractsList.devnet.LoyaltyToken,
             ValidatorAddress: activeContractsList.devnet.Validator,
@@ -87,16 +87,16 @@ export const LIVE_CONTRACTS: { [K in SupportedNetworkGroup]: NetworkDeployment }
             InnerChainBridgeAddress: "0xB7766345d2b0141cCB98a5C6130Ba63972eba956"
         },
         main: {
-            network: 24600,
-            web3Endpoint: "http://127.0.0.1:8540",
+            network: 24002,
+            web3Endpoint: "http://127.0.0.1:8502",
             LoyaltyTokenAddress: "0xB1A90a5C6e30d64Ab6f64C30eD392F46eDBcb022",
             LoyaltyBridgeAddress: "0x6Cc73CF62cF489973B41EAA94B857f36918Adee3",
             InnerChainBridgeAddress: "0x0F31212e5C9b698cf6BDbF5e5f1F5917b5e002cc",
             OuterChainBridgeAddress: "0x4d838836e0EcE05a2CFb016C8e60534D8AE53C40"
         },
         outer: {
-            network: 24000,
-            web3Endpoint: "http://127.0.0.1:8500",
+            network: 24004,
+            web3Endpoint: "http://127.0.0.1:8504",
             LoyaltyTokenAddress: "0x173A004aCf3aF9ccc0785346F17733eA33f65BB9",
             OuterChainBridgeAddress: "0x6Cc73CF62cF489973B41EAA94B857f36918Adee3"
         },
@@ -131,14 +131,14 @@ export const ADDITIONAL_NETWORKS: Network[] = [
     },
     {
         name: SupportedNetwork.DEV_GROUP_SIDE,
-        chainId: 24680
+        chainId: 24000
     },
     {
         name: SupportedNetwork.DEV_GROUP_MAIN,
-        chainId: 24600
+        chainId: 24002
     },
     {
         name: SupportedNetwork.DEV_GROUP_OUTER,
-        chainId: 24000
+        chainId: 24004
     }
 ];

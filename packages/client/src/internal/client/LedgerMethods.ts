@@ -72,7 +72,7 @@ import { findLog } from "../../client-common/utils";
 import { BigNumber } from "@ethersproject/bignumber";
 import { ContractTransaction } from "@ethersproject/contracts";
 import { AddressZero, HashZero } from "@ethersproject/constants";
-import { BytesLike } from "@ethersproject/bytes";
+import { arrayify, BytesLike } from "@ethersproject/bytes";
 import { Signer } from "@ethersproject/abstract-signer";
 
 /**
@@ -2379,4 +2379,244 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
             allowance: params.amount
         };
     }
+
+    // region OuterChain <-> MainChain Deposit & Withdrawal via Bridge
+    /**
+     * 토큰을 브릿지를 경유해서 입금한다
+     * @param amount 금액
+     * @return {AsyncGenerator<DepositViaBridgeStepValue>}
+     */
+    public async *depositFromOuterChainToMainChainViaBridge(
+        amount: BigNumber
+    ): AsyncGenerator<DepositViaBridgeStepValue> {
+        const signer = this.web3Outer.getConnectedSigner();
+        if (!signer) {
+            throw new NoSignerError();
+        } else if (!signer.provider) {
+            throw new NoProviderError();
+        }
+
+        const account = await signer.getAddress();
+        const adjustedAmount = ContractUtils.zeroGWEI(amount);
+
+        const expiry = ContractUtils.getTimeStamp() + 60;
+        const signature = await ContractUtils.signMessage(signer, arrayify(HashZero));
+        yield { key: NormalSteps.PREPARED, account, amount: adjustedAmount, expiry, signature };
+
+        const bridgeContract: IBridge = IBridge__factory.connect(this.web3Outer.getOuterChainBridgeAddress(), signer);
+        let depositId: string;
+        while (true) {
+            depositId = ContractUtils.getRandomId(account);
+            if (await bridgeContract.isAvailableDepositId(depositId)) break;
+        }
+        const tokenContract: BIP20 = BIP20__factory.connect(this.web3Outer.getTokenAddress(), signer);
+        const tokenId = ContractUtils.getTokenId(await tokenContract.name(), await tokenContract.symbol());
+        yield* this.updateAllowanceInOuterNet({
+            amount: adjustedAmount,
+            targetAddress: bridgeContract.address,
+            tokenAddress: tokenContract.address
+        });
+
+        const tx = await bridgeContract.depositToBridge(tokenId, depositId, account, adjustedAmount, expiry, signature);
+
+        yield {
+            key: NormalSteps.SENT,
+            account,
+            amount: adjustedAmount,
+            expiry,
+            signature,
+            tokenId: tokenId,
+            depositId: depositId,
+            txHash: tx.hash
+        };
+        const txReceipt = await tx.wait();
+
+        const log = findLog(txReceipt, bridgeContract.interface, "BridgeDeposited");
+        if (!log) {
+            throw new FailedTransactionError();
+        }
+
+        yield {
+            key: NormalSteps.DONE,
+            account,
+            tokenId: tokenId,
+            depositId: depositId,
+            amount: adjustedAmount,
+            signature
+        };
+    }
+
+    public async *waiteDepositFromOuterChainToMainChainViaBridge(
+        depositId: string,
+        timeout: number = 30
+    ): AsyncGenerator<WaiteBridgeStepValue> {
+        const provider = this.web3Main.getProvider();
+        if (!provider) {
+            throw new NoProviderError();
+        }
+        const bridgeContract: IBridge = IBridge__factory.connect(this.web3Main.getOuterChainBridgeAddress(), provider);
+
+        const start = ContractUtils.getTimeStamp();
+        while (true) {
+            const withdrawInfo = await bridgeContract.getWithdrawInfo(depositId);
+            if (withdrawInfo.account !== AddressZero) {
+                yield {
+                    key: WaiteBridgeSteps.CREATED,
+                    account: withdrawInfo.account,
+                    amount: withdrawInfo.amount,
+                    tokenId: withdrawInfo.tokenId
+                };
+                break;
+            }
+            if (ContractUtils.getTimeStamp() - start > timeout) {
+                yield { key: WaiteBridgeSteps.TIMEOUT };
+                return;
+            }
+            await ContractUtils.delay(1000);
+        }
+
+        while (true) {
+            const withdrawInfo = await bridgeContract.getWithdrawInfo(depositId);
+            if (withdrawInfo.executed) {
+                yield {
+                    key: WaiteBridgeSteps.EXECUTED,
+                    account: withdrawInfo.account,
+                    amount: withdrawInfo.amount,
+                    tokenId: withdrawInfo.tokenId
+                };
+                break;
+            } else {
+                if (ContractUtils.getTimeStamp() - start > timeout) {
+                    yield { key: WaiteBridgeSteps.TIMEOUT };
+                    return;
+                }
+                await ContractUtils.delay(1000);
+            }
+        }
+        await ContractUtils.delay(1000);
+        yield { key: WaiteBridgeSteps.DONE };
+    }
+
+    public async *withdrawFromMainChainToOuterChainViaBridge(
+        amount: BigNumber
+    ): AsyncGenerator<WithdrawViaBridgeStepValue> {
+        const signer = this.web3Main.getConnectedSigner();
+        if (!signer) {
+            throw new NoSignerError();
+        } else if (!signer.provider) {
+            throw new NoProviderError();
+        }
+
+        const chainInfo = await this.getChainInfoOfMainChain();
+        const account = await signer.getAddress();
+        const adjustedAmount = ContractUtils.zeroGWEI(amount);
+
+        const nonce = await this.getNonceOfMainChainToken(account);
+        const expiry = ContractUtils.getTimeStamp() + 60;
+        const message = ContractUtils.getTransferMessage(
+            chainInfo.network.chainId,
+            chainInfo.contract.token,
+            account,
+            chainInfo.contract.outerChainBridge,
+            adjustedAmount,
+            nonce,
+            expiry
+        );
+        const signature = await ContractUtils.signMessage(signer, message);
+
+        const param = {
+            account,
+            amount: adjustedAmount.toString(),
+            expiry,
+            signature
+        };
+
+        yield { key: NormalSteps.PREPARED, account, amount: adjustedAmount, expiry, signature };
+
+        const res = await Network.post(await this.relay.getEndpoint("/v1/outer/bridge/withdraw"), param);
+        if (res.code !== 0) {
+            throw new InternalServerError(res?.error?.message ?? "");
+        }
+
+        yield {
+            key: NormalSteps.SENT,
+            account,
+            amount: adjustedAmount,
+            expiry,
+            signature,
+            tokenId: res.data.tokenId,
+            depositId: res.data.depositId,
+            txHash: res.data.txHash
+        };
+        const provider = await this.getProviderOfMainChain();
+        const contractTx = (await provider.getTransaction(res.data.txHash)) as ContractTransaction;
+        const txReceipt = await contractTx.wait();
+
+        const bridgeContract: IBridge = IBridge__factory.connect(chainInfo.contract.outerChainBridge, provider);
+
+        const log = findLog(txReceipt, bridgeContract.interface, "BridgeDeposited");
+        if (!log) {
+            throw new FailedTransactionError();
+        }
+
+        yield {
+            key: NormalSteps.DONE,
+            account,
+            tokenId: res.data.tokenId,
+            depositId: res.data.depositId,
+            amount: adjustedAmount,
+            signature
+        };
+    }
+
+    public async *waiteWithdrawFromMainChainToOuterChainViaBridge(
+        depositId: string,
+        timeout: number = 30
+    ): AsyncGenerator<WaiteBridgeStepValue> {
+        const provider = this.web3Outer.getProvider();
+        if (!provider) {
+            throw new NoProviderError();
+        }
+        const bridgeContract: IBridge = IBridge__factory.connect(this.web3Outer.getOuterChainBridgeAddress(), provider);
+
+        const start = ContractUtils.getTimeStamp();
+        while (true) {
+            const withdrawInfo = await bridgeContract.getWithdrawInfo(depositId);
+            if (withdrawInfo.account !== AddressZero) {
+                yield {
+                    key: WaiteBridgeSteps.CREATED,
+                    account: withdrawInfo.account,
+                    amount: withdrawInfo.amount,
+                    tokenId: withdrawInfo.tokenId
+                };
+                break;
+            }
+            if (ContractUtils.getTimeStamp() - start > timeout) {
+                yield { key: WaiteBridgeSteps.TIMEOUT };
+                return;
+            }
+            await ContractUtils.delay(1000);
+        }
+
+        while (true) {
+            const withdrawInfo = await bridgeContract.getWithdrawInfo(depositId);
+            if (withdrawInfo.executed) {
+                yield {
+                    key: WaiteBridgeSteps.EXECUTED,
+                    account: withdrawInfo.account,
+                    amount: withdrawInfo.amount,
+                    tokenId: withdrawInfo.tokenId
+                };
+                break;
+            } else {
+                if (ContractUtils.getTimeStamp() - start > timeout) {
+                    yield { key: WaiteBridgeSteps.TIMEOUT };
+                    return;
+                }
+                await ContractUtils.delay(1000);
+            }
+        }
+        yield { key: WaiteBridgeSteps.DONE };
+    }
+    // endregion
 }

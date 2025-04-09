@@ -6120,10 +6120,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.npmjs.org/kind-of/-/kind-of-6.0.3.tgz"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kios-contracts-lib-v2@~2.15.2:
-  version "2.15.2"
-  resolved "https://registry.yarnpkg.com/kios-contracts-lib-v2/-/kios-contracts-lib-v2-2.15.2.tgz#717411c55b5433abe8a9d6e0b58f38db324e83fd"
-  integrity sha512-alAJ2BZmnpaMzJG5qLz05Kggfg3iHbN6lSFNqKuX/g/BP3NPBFS9LywgaIqJXEqK4z10TWS2wYXZ1EAktMpynw==
+kios-contracts-lib-v2@~2.15.3:
+  version "2.15.3"
+  resolved "https://registry.yarnpkg.com/kios-contracts-lib-v2/-/kios-contracts-lib-v2-2.15.3.tgz#970fce471675f5cc3a1726068fad02777c25ab3f"
+  integrity sha512-Rc5WP+4nXFNrxlZl7KQekAgwROsAb/kL+PesbLdLLFKI3M2aF2KgKEKUJocIomeb3AlCSo4CxEe1UzXz9LoEcA==
   dependencies:
     ethers "5.7.0"
 

@@ -493,8 +493,8 @@ export class Context {
      */
     constructor(params: Partial<ContextParams>) {
         this.side = new SideContext(params.side as SideWeb3ContextParams);
-        this.main = new MainContext(params.side as SideWeb3ContextParams);
-        this.outer = new OuterContext(params.side as SideWeb3ContextParams);
+        this.main = new MainContext(params.main as MainWeb3ContextParams);
+        this.outer = new OuterContext(params.outer as OuterWeb3ContextParams);
         this.set(params);
     }
 

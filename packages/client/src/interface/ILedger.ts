@@ -72,10 +72,25 @@ export interface ILedgerMethods extends IClientCore {
     transfer: (to: string, amount: BigNumber) => AsyncGenerator<DelegatedTransferStepValue>;
 
     // Deposit & Withdrawal via Bridge
+    // Deposit assets from the main chain to the side chain
     depositViaBridge: (amount: BigNumber) => AsyncGenerator<DepositViaBridgeStepValue>;
+    // Withdraw assets from the side chain to the main chain
     withdrawViaBridge: (amount: BigNumber) => AsyncGenerator<WithdrawViaBridgeStepValue>;
     waiteDepositViaBridge: (depositId: string, timeout?: number) => AsyncGenerator<WaiteBridgeStepValue>;
     waiteWithdrawViaBridge: (depositId: string, timeout?: number) => AsyncGenerator<WaiteBridgeStepValue>;
+
+    // Deposit assets from the outer chain to the main chain
+    depositFromOuterChainToMainChainViaBridge: (amount: BigNumber) => AsyncGenerator<DepositViaBridgeStepValue>;
+    // Withdraw assets from the main chain to the outer chain
+    withdrawFromMainChainToOuterChainViaBridge: (amount: BigNumber) => AsyncGenerator<WithdrawViaBridgeStepValue>;
+    waiteDepositFromOuterChainToMainChainViaBridge: (
+        depositId: string,
+        timeout?: number
+    ) => AsyncGenerator<WaiteBridgeStepValue>;
+    waiteWithdrawFromMainChainToOuterChainViaBridge: (
+        depositId: string,
+        timeout?: number
+    ) => AsyncGenerator<WaiteBridgeStepValue>;
 
     // Mobile
     registerMobileToken: (

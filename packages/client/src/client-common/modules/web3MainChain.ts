@@ -38,6 +38,10 @@ export class Web3MainChainModule implements IClientWeb3MainCore {
             this.useSigner(context.signer);
         }
 
+        if (context.tokenAddress) {
+            tokenAddressMap.set(this, context.tokenAddress);
+        }
+
         if (context.loyaltyBridgeAddress) {
             loyaltyBridgeAddressMap.set(this, context.loyaltyBridgeAddress);
         }

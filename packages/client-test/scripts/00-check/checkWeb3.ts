@@ -16,6 +16,12 @@ async function main() {
 
     const web3Status = await client.web3.isUp();
     console.log(`web3Status: ${web3Status}`);
+
+    const web3MainStatus = await client.web3Main.isUp();
+    console.log(`web3MainStatus: ${web3MainStatus}`);
+
+    const web3OuterStatus = await client.web3Outer.isUp();
+    console.log(`web3OuterStatus: ${web3OuterStatus}`);
 }
 
 main().catch((error) => {

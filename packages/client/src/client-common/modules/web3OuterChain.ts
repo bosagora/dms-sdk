@@ -30,6 +30,10 @@ export class Web3OuterChainModule implements IClientWeb3OuterCore {
             this.useSigner(context.signer);
         }
 
+        if (context.tokenAddress) {
+            tokenAddressMap.set(this, context.tokenAddress);
+        }
+
         if (context.outerChainBridgeAddress) {
             outerChainBridgeAddressMap.set(this, context.outerChainBridgeAddress);
         }
