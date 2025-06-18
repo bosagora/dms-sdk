@@ -664,6 +664,21 @@ export interface IBalance {
     };
 }
 
+export interface IBalanceMainChain {
+    point: {
+        balance: BigNumber;
+        value: BigNumber;
+    };
+    token: {
+        balance: BigNumber;
+        value: BigNumber;
+    };
+    token2: {
+        balance: BigNumber;
+        value: BigNumber;
+    };
+}
+
 export interface IProtocolFees {
     transfer: BigNumber;
     withdraw: BigNumber;
@@ -707,7 +722,7 @@ export interface IAccountSummary {
     provider: IProvisionInfo;
     agent: IAgentInfo;
     ledger: IBalance;
-    mainChain: IBalance;
+    mainChain: IBalanceMainChain;
     sideChain: IBalance;
     protocolFees: IProtocolFees;
 }
@@ -719,7 +734,7 @@ export interface IShopSummary {
     settlement: ISettlementInfo;
     agent: IAgentInfo;
     ledger: IBalance;
-    mainChain: IBalance;
+    mainChain: IBalanceMainChain;
     sideChain: IBalance;
     protocolFees: IProtocolFees;
 }

@@ -137,6 +137,10 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
                 token: {
                     balance: BigNumber.from(res.data.mainChain.token.balance),
                     value: BigNumber.from(res.data.mainChain.token.value)
+                },
+                token2: {
+                    balance: BigNumber.from(res.data.mainChain.token2.balance),
+                    value: BigNumber.from(res.data.mainChain.token2.value)
                 }
             },
             sideChain: {
@@ -1670,12 +1674,7 @@ export class LedgerMethods extends ClientCore implements ILedgerMethods {
      * @param pageSize 페이지당 항목의 갯수
      */
     public async getProvideHistory(account: string, pageNumber: number = 1, pageSize: number = 10): Promise<any> {
-        return await this.getAccountHistory(
-            account,
-            [LedgerAction.PROVIDE_OUT],
-            pageNumber,
-            pageSize
-        );
+        return await this.getAccountHistory(account, [LedgerAction.PROVIDE_OUT], pageNumber, pageSize);
     }
     // endregion
 

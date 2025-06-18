@@ -137,6 +137,10 @@ export class ShopMethods extends ClientCore implements IShopMethods {
                 token: {
                     balance: BigNumber.from(res.data.mainChain.token.balance),
                     value: BigNumber.from(res.data.mainChain.token.value)
+                },
+                token2: {
+                    balance: BigNumber.from(res.data.mainChain.token2.balance),
+                    value: BigNumber.from(res.data.mainChain.token2.value)
                 }
             },
             sideChain: {
