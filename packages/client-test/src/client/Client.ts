@@ -33,13 +33,13 @@ export class Client {
             };
         } else if (network === NetWorkType.mainnet) {
             this.endpoints = {
-                relay: "https://relay.main.kioscoin.io",
-                save: "https://save.main.kioscoin.io",
+                relay: "https://relay-mainnet.kios.bosagora.com/",
+                save: "https://save-mainnet.kios.bosagora.com/",
             };
         } else {
             this.endpoints = {
-                relay: "https://relay.test.kioscoin.io",
-                save: "https://save.test.kioscoin.io",
+                relay: "https://relay-testnet.kios.bosagora.com/",
+                save: "https://save-testnet.kios.bosagora.com/",
             };
         }
     }

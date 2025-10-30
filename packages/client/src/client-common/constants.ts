@@ -16,8 +16,8 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
         LoyaltyTransferAddress: activeContractsList.mainnet.LoyaltyTransfer,
         LoyaltyBridgeAddress: activeContractsList.mainnet.LoyaltyBridge,
         network: 215120,
-        web3Endpoint: "https://rpc.main.kioscoin.io/",
-        relayEndpoint: "https://relay.main.kioscoin.io/"
+        web3Endpoint: "https://rpc-mainnet.kios.bosagora.com/",
+        relayEndpoint: "https://relay-mainnet.kios.bosagora.com/"
     },
     kios_testnet: {
         PhoneLinkCollectionAddress: activeContractsList.testnet.PhoneLinkCollection,
@@ -32,8 +32,8 @@ export const LIVE_CONTRACTS: { [K in SupportedNetwork]: NetworkDeployment } = {
         LoyaltyTransferAddress: activeContractsList.testnet.LoyaltyTransfer,
         LoyaltyBridgeAddress: activeContractsList.testnet.LoyaltyBridge,
         network: 215125,
-        web3Endpoint: "https://rpc.test.kioscoin.io/",
-        relayEndpoint: "https://relay.test.kioscoin.io/"
+        web3Endpoint: "https://rpc-testnet.kios.bosagora.com/",
+        relayEndpoint: "https://relay-testnet.kios.bosagora.com/"
     },
     kios_devnet: {
         PhoneLinkCollectionAddress: activeContractsList.devnet.PhoneLinkCollection,

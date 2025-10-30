@@ -78,7 +78,7 @@
         "@types/mocha": "^10.0.0",
         "@types/node": "^12.20.43",
         "@types/urijs": "^1.19.12",
-        "kios-sdk-client-v2": "~2.22.0",
+        "kios-sdk-client-v2": "~2.23.0",
         "assert": "^2.0.0",
         "axios": "1.7.8",
         "beautify": "^0.0.8",

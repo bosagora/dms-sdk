@@ -45,6 +45,8 @@ async function main() {
     console.log(`   - point.value: ${new BOACoin(summary.mainChain.point.value).toDisplayString(true, 4)}`);
     console.log(`   - token.balance: ${new BOACoin(summary.mainChain.token.balance).toDisplayString(true, 4)}`);
     console.log(`   - token.value: ${new BOACoin(summary.mainChain.token.value).toDisplayString(true, 4)}`);
+    console.log(`   - token2.balance: ${new BOACoin(summary.mainChain.token2.balance).toDisplayString(true, 4)}`);
+    console.log(`   - token2.value: ${new BOACoin(summary.mainChain.token2.value).toDisplayString(true, 4)}`);
 
     console.log(`- sideChain`);
     console.log(`   - point.balance: ${new BOACoin(summary.sideChain.point.balance).toDisplayString(true, 4)}`);
